@@ -66,8 +66,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Origin': window.location.origin,
         },
+        credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify({ email, password }),
       });
 
