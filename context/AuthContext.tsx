@@ -40,7 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      const response = await fetch(`/api/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     try {
         console.log('Sending password change request with token...');
-        const response = await fetch(`${API_BASE_URL}/api/users/change-password`, {
+        const response = await fetch(`/api/users/change-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const requestPasswordReset = async (email: string) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/forgot-password`, {
+        const response = await fetch(`/api/users/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -178,7 +178,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const resetPassword = async (token: string, newPassword: string) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/api/users/reset-password`, {
+        const response = await fetch(`/api/users/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
