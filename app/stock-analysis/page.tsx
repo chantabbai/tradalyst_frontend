@@ -103,7 +103,7 @@ type SearchResult = {
   exchangeShortName: string;
 }
 
-const API_BASE_URL = 'http://localhost:8080/api/stocks';
+const API_BASE_URL = ' https://tradalystbackend-chantabbai07ai.replit.app/api/stocks';
 
 type ChartInstance = Chart<"line", any, any>
 
@@ -1318,7 +1318,7 @@ function ValuationTab({ stockData, financialData, valuationData }: ValuationTabP
       if (!stockData?.symbol) return;
       
       try {
-        const response = await fetch(`http://localhost:8080/api/stocks/dividends/${stockData.symbol}`);
+        const response = await fetch(`https://tradalystbackend-chantabbai07ai.replit.app/api/stocks/dividends/${stockData.symbol}`);
         if (response.ok) {
           const data = await response.json();
           setDividendData(data);
@@ -2745,7 +2745,7 @@ function DividendsTab({ stockData }: { stockData: any }) {
       setIsLoading(true);
       try {
         console.log('Fetching dividend data for:', stockData.symbol);
-        const response = await fetch(`http://localhost:8080/api/stocks/dividends/${stockData.symbol}`);
+        const response = await fetch(`https://tradalystbackend-chantabbai07ai.replit.app/api/stocks/dividends/${stockData.symbol}`);
         console.log('Dividend API Response status:', response.status);
         
         if (response.ok) {
