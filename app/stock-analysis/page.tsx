@@ -376,27 +376,23 @@ export default function StockAnalysis() {
       const valuationData: any = {};
       
       if (dcfResponse.ok) {
-        const dcfData = await dcfResponse.json();
-        console.log('DCF Response:', dcfData);
+        const dcfData = await dcfResponse.json();        
         valuationData.dcf = dcfData;
       }
 
       if (metricsResponse.ok) {
-        const metricsData = await metricsResponse.json();
-        console.log('Metrics Response:', metricsData);
+        const metricsData = await metricsResponse.json();         
         valuationData.metrics = metricsData;
       }
 
       if (ratiosResponse.ok) {
-        const ratiosData = await ratiosResponse.json();
-        console.log('Ratios Response:', ratiosData);
+        const ratiosData = await ratiosResponse.json();         
         valuationData.ratios = ratiosData;
       }
 
       // Fix: Use ratioTtmResponse instead of ratiosResponse
       if (ratioTtmResponse.ok) {
-        const ttmRatiosData = await ratioTtmResponse.json();
-        console.log('Ratios TTM Response:', ttmRatiosData);
+        const ttmRatiosData = await ratioTtmResponse.json();         
         valuationData.ttmRatios = ttmRatiosData;
       }
       
@@ -1337,13 +1333,13 @@ function ValuationTab({ stockData, financialData, valuationData }: ValuationTabP
   const ratios = valuationData.ratios || {};
   const ttmRatios = valuationData.ttmRatios || {};
   // Now add the useEffect after ratios is defined
-  useEffect(() => {
-    console.log('ValuationData:', valuationData);
-    console.log('Ratios:', ratios);
-    console.log('Ratios TTM:', ttmRatios);
-    console.log('P/B Ratio:', ratios.priceToBookRatioTTM);
-    console.log('All TTM Ratios:', valuationData.ratios);
-  }, [valuationData, ratios]);
+  // useEffect(() => {
+  //   console.log('ValuationData:', valuationData);
+  //   console.log('Ratios:', ratios);
+  //   console.log('Ratios TTM:', ttmRatios);
+  //   console.log('P/B Ratio:', ratios.priceToBookRatioTTM);
+  //   console.log('All TTM Ratios:', valuationData.ratios);
+  // }, [valuationData, ratios]);
 
   useEffect(() => {
     const fetchGrahamValuation = async () => {
