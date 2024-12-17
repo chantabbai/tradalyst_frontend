@@ -100,7 +100,7 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="min-h-[60vh] sm:min-h-[75vh] py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 flex items-center justify-center bg-background/50 relative overflow-hidden backdrop-blur-3xl">
+      <section className="min-h-[70vh] sm:min-h-[85vh] py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 flex items-center justify-center bg-background/50 relative overflow-hidden backdrop-blur-3xl">
         {/* Modern gradient background */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:40px_40px] sm:bg-[size:60px_60px]" />
@@ -187,7 +187,7 @@ export default function HomePage() {
 
             {/* Modern CTA buttons */}
             <motion.div 
-              className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 px-4 sm:px-0 pt-6 sm:pt-8 w-full sm:w-auto"
+              className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 px-4 sm:px-0 pt-6 sm:pt-8 mb-24 sm:mb-32 w-full sm:w-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
