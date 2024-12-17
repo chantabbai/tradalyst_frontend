@@ -2,15 +2,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizeCss: true,
-    modularizeImports: {
-      '@heroicons/react/24/outline': {
-        transform: '@heroicons/react/24/outline/{{member}}'
-      },
-      'recharts': {
-        transform: 'recharts/{{member}}'
-      }
-    }
+    optimizeCss: true
   },
   poweredByHeader: false,
   compress: true,
