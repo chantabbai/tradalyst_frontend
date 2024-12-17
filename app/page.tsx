@@ -100,12 +100,12 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="min-h-[75vh] py-12 px-4 flex items-center justify-center bg-background/50 relative overflow-hidden backdrop-blur-3xl">
+      <section className="min-h-[60vh] sm:min-h-[75vh] py-8 sm:py-12 md:py-16 px-4 sm:px-6 md:px-8 flex items-center justify-center bg-background/50 relative overflow-hidden backdrop-blur-3xl">
         {/* Modern gradient background */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
+          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:40px_40px] sm:bg-[size:60px_60px]" />
           <motion.div
-            className="absolute -top-[25%] left-[50%] h-[600px] w-[600px] rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 blur-[120px]"
+            className="absolute -top-[25%] left-[50%] h-[300px] w-[300px] sm:h-[450px] sm:w-[450px] md:h-[600px] md:w-[600px] rounded-full bg-gradient-to-r from-primary/20 to-purple-500/20 blur-[80px] sm:blur-[120px]"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.3, 0.2, 0.3],
@@ -144,8 +144,8 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-none">
-                <span className="block mb-3 bg-clip-text text-transparent bg-gradient-to-r from-gray-900/80 to-gray-600 dark:from-gray-100 dark:to-gray-400">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none">
+                <span className="block mb-2 sm:mb-3 bg-clip-text text-transparent bg-gradient-to-r from-gray-900/80 to-gray-600 dark:from-gray-100 dark:to-gray-400">
                   Analyze Deeper.
                 </span>
                 <span className="relative inline-block">
@@ -187,7 +187,7 @@ export default function HomePage() {
 
             {/* Modern CTA buttons */}
             <motion.div 
-              className="flex flex-col sm:flex-row justify-center gap-4 pt-8"
+              className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-6 sm:pt-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
