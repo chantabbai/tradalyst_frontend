@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('token');
       }
     } catch (error) {
-      //console.error('Error fetching user data:', error);
+      console.error('Error fetching user data:', error);
       localStorage.removeItem('token');
     }
   };
@@ -86,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return false;
     } catch (error) {
-      //console.error('Login error:', error);
+      console.error('Login error:', error);
       if (error instanceof Error) {
         throw error;
       }
@@ -110,12 +110,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const changePassword = async (currentPassword: string, newPassword: string) => {
     const token = localStorage.getItem('token');
     if (!token) {
-        //console.error('Authentication token not found');
+        console.error('Authentication token not found');
         throw new Error('Not authenticated');
     }
 
     try {
-        //console.log('Sending password change request with token...');
+        console.log('Sending password change request with token...');
         const response = await fetch(`/api/users/change-password`, {
             method: 'POST',
             headers: {
@@ -126,11 +126,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             body: JSON.stringify({ currentPassword, newPassword }),
         });
 
-        //console.log('Response status:', response.status);
+        console.log('Response status:', response.status);
         
         if (!response.ok) {
             if (response.status === 401) {
-                //console.error('Authentication failed - token may be invalid');
+                console.error('Authentication failed - token may be invalid');
                 // Clear token and redirect to login
                 localStorage.removeItem('token');
                 setUser(null);
@@ -140,15 +140,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             }
             
             const errorData = await response.json().catch(() => null);
-            //console.error('Error response:', errorData);
+            console.error('Error response:', errorData);
             throw new Error(errorData?.message || 'Failed to change password');
         }
 
         const data = await response.json();
-        //console.log('Password change successful:', data);
+        console.log('Password change successful:', data);
         return data;
     } catch (error) {
-        //console.error('Change password error:', error);
+        console.error('Change password error:', error);
         throw error;
     }
   };
@@ -171,7 +171,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const responseText = await response.text();
         return responseText;
     } catch (error) {
-        //console.error('Request password reset error:', error);
+        console.error('Request password reset error:', error);
         throw error;
     }
   };
@@ -196,7 +196,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         return await response.text();
     } catch (error) {
-        //console.error('Reset password error:', error);
+        console.error('Reset password error:', error);
         throw error;
     }
   };
