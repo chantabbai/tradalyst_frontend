@@ -187,19 +187,20 @@ export default function HomePage() {
 
             {/* Modern CTA buttons */}
             <motion.div 
-              className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-6 sm:pt-8"
+              className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 px-4 sm:px-0 pt-6 sm:pt-8 w-full sm:w-auto"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8, duration: 0.5 }}
             >
-              <Link href="/auth/register">
+              <Link href="/auth/register" className="w-full sm:w-auto">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto"
                 >
                   <Button 
                     size="lg" 
-                    className="w-full sm:w-auto px-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+                    className="w-full sm:w-auto min-w-[140px] px-6 sm:px-8 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary h-11 sm:h-12"
                   >
                     Get Started
                     <motion.div
@@ -212,15 +213,16 @@ export default function HomePage() {
                   </Button>
                 </motion.div>
               </Link>
-              <Link href="/auth/login">
+              <Link href="/auth/login" className="w-full sm:w-auto">
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  className="w-full sm:w-auto"
                 >
                   <Button 
                     variant="outline" 
                     size="lg"
-                    className="w-full sm:w-auto border-primary/20 hover:bg-primary/5"
+                    className="w-full sm:w-auto min-w-[140px] border-primary/20 hover:bg-primary/5 h-11 sm:h-12"
                   >
                     Sign In
                   </Button>
