@@ -159,36 +159,6 @@ export default function DashboardContent() {
     key: 'totalPnL',
     direction: 'desc'
   });
-
-{/* Portfolio Allocation Card */}
-<Card>
-  <CardHeader>
-    <CardTitle className="text-lg font-semibold">Portfolio Allocation</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={strategyMetrics}
-            dataKey="totalPnL"
-            nameKey="strategy"
-            cx="50%"
-            cy="50%"
-            outerRadius={80}
-            label
-          >
-            {strategyMetrics.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.totalPnL >= 0 ? '#16a34a' : '#dc2626'} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  </CardContent>
-</Card>
-
   const [profitMetrics, setProfitMetrics] = useState<ProfitMetrics>({
     profitFactor: 0,
     grossProfits: 0,
