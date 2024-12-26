@@ -16,8 +16,9 @@ mode = "production"
 
 [[deployment.environments]]
 name = "development"
-branch = "dev"
+branch = "forDev"
 mode = "development"
+region = "dev"
 
 [[ports]]
 localPort = 3000
