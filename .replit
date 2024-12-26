@@ -19,6 +19,7 @@ name = "development"
 branch = "forDev"
 mode = "development"
 region = "dev"
+deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 3000
