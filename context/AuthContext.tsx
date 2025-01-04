@@ -33,8 +33,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const token = localStorage.getItem('token')
     if (token) {
-      // Fetch user data using the token
+      setIsAuthenticated(true); // Set authenticated immediately if token exists
       fetchUserData(token);
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
     }
   }, [])
 
@@ -49,13 +52,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await response.json();
         setUser(userData);
         setIsAuthenticated(true);
-      } else {
-        // If token is invalid, clear it
+        // Ensure token is still stored
+        localStorage.setItem('token', token);
+      } else if (response.status === 401) {
+        // Only remove token if it's actually invalid
         localStorage.removeItem('token');
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      localStorage.removeItem('token');
+      // Don't remove token on network errors
+      setIsAuthenticated(false);
     }
   };
 
