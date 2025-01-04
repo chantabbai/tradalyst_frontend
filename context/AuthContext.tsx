@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface User {
@@ -11,6 +12,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isInitialized: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   logoutMessage: string | null;
@@ -23,25 +26,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const TOKEN_VALIDATION_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [logoutMessage, setLogoutMessage] = useState<string | null>(null)
-  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      setIsAuthenticated(true); // Set authenticated immediately if token exists
-      fetchUserData(token);
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
+  const validateToken = useCallback(async (token: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/validate-token`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      return false;
     }
-  }, [])
+  }, []);
 
-  const fetchUserData = async (token: string) => {
+  const fetchUserData = useCallback(async (token: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/users/me`, {
         headers: {
@@ -52,22 +61,67 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await response.json();
         setUser(userData);
         setIsAuthenticated(true);
-        // Ensure token is still stored
         localStorage.setItem('token', token);
-      } else if (response.status === 401) {
-        // Only remove token if it's actually invalid
-        localStorage.removeItem('token');
-        setUser(null);
-        setIsAuthenticated(false);
+      } else {
+        handleAuthError();
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // Don't remove token on network errors
       setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
+
+  const handleAuthError = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsLoading(false);
+  }, []);
+
+  // Initialization effect
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        handleAuthError();
+        setIsInitialized(true);
+        return;
+      }
+
+      const isValid = await validateToken(token);
+      if (isValid) {
+        await fetchUserData(token);
+      } else {
+        handleAuthError();
+      }
+      setIsInitialized(true);
+    };
+
+    initializeAuth();
+  }, [fetchUserData, validateToken, handleAuthError]);
+
+  // Periodic token validation
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const validateInterval = setInterval(async () => {
+      const isValid = await validateToken(token);
+      if (!isValid) {
+        handleAuthError();
+      }
+    }, TOKEN_VALIDATION_INTERVAL);
+
+    return () => clearInterval(validateInterval);
+  }, [isAuthenticated, validateToken, handleAuthError]);
 
   const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/users/login`, {
         method: 'POST',
@@ -86,6 +140,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
 
       if (data.token && data.userId) {
+        const isValid = await validateToken(data.token);
+        if (!isValid) {
+          throw new Error('Invalid token received');
+        }
+
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
         setUser({ id: data.userId, email });
@@ -99,120 +158,112 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         throw error;
       }
       throw new Error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     setUser(null);
     setIsAuthenticated(false);
     setLogoutMessage("You have been successfully logged out.");
     router.push('/');
-  }
+  }, [router]);
 
   const clearLogoutMessage = () => {
     setLogoutMessage(null);
-  }
+  };
 
   const changePassword = async (currentPassword: string, newPassword: string) => {
     const token = localStorage.getItem('token');
     if (!token) {
-        console.error('Authentication token not found');
-        throw new Error('Not authenticated');
+      throw new Error('Not authenticated');
     }
 
     try {
-        console.log('Sending password change request with token...');
-        const response = await fetch(`/api/users/change-password`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ currentPassword, newPassword }),
-        });
+      const response = await fetch(`/api/users/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
 
-        console.log('Response status:', response.status);
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                console.error('Authentication failed - token may be invalid');
-                // Clear token and redirect to login
-                localStorage.removeItem('token');
-                setUser(null);
-                setIsAuthenticated(false);
-                router.push('/auth/login');
-                throw new Error('Your session has expired. Please log in again.');
-            }
-            
-            const errorData = await response.json().catch(() => null);
-            console.error('Error response:', errorData);
-            throw new Error(errorData?.message || 'Failed to change password');
+      if (!response.ok) {
+        if (response.status === 401) {
+          handleAuthError();
+          router.push('/auth/login');
+          throw new Error('Your session has expired. Please log in again.');
         }
+        
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to change password');
+      }
 
-        const data = await response.json();
-        console.log('Password change successful:', data);
-        return data;
+      return await response.json();
     } catch (error) {
-        console.error('Change password error:', error);
-        throw error;
+      console.error('Change password error:', error);
+      throw error;
     }
   };
 
   const requestPasswordReset = async (email: string) => {
     try {
-        const response = await fetch(`/api/users/forgot-password`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(email),
-        });
+      const response = await fetch(`/api/users/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(email),
+      });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Failed to send reset email');
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to send reset email');
+      }
 
-        const responseText = await response.text();
-        return responseText;
+      return await response.text();
     } catch (error) {
-        console.error('Request password reset error:', error);
-        throw error;
+      console.error('Request password reset error:', error);
+      throw error;
     }
   };
 
   const resetPassword = async (token: string, newPassword: string) => {
     try {
-        const response = await fetch(`/api/users/reset-password`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                token,
-                newPassword,
-            }),
-        });
+      const response = await fetch(`/api/users/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          newPassword,
+        }),
+      });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to reset password');
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to reset password');
+      }
 
-        return await response.text();
+      return await response.text();
     } catch (error) {
-        console.error('Reset password error:', error);
-        throw error;
+      console.error('Reset password error:', error);
+      throw error;
     }
   };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      isAuthenticated, 
+      isAuthenticated,
+      isInitialized,
+      isLoading, 
       login, 
       logout, 
       logoutMessage, 
@@ -223,13 +274,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
-}
+  return context;
+};
