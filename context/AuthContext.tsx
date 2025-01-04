@@ -32,8 +32,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    if (token) {
-      setIsAuthenticated(true); // Set authenticated immediately if token exists
+    const userId = localStorage.getItem('userId')
+    if (token && userId) {
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: localStorage.getItem('userEmail') || ''
+      });
       fetchUserData(token);
     } else {
       setIsAuthenticated(false);
@@ -88,6 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data.token && data.userId) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', email);
         setUser({ id: data.userId, email });
         setIsAuthenticated(true);
         return true;
