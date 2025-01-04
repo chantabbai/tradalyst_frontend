@@ -42,6 +42,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
+      // Keep current auth state while validating
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: userEmail || ''
+      });
+
       try {
         // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
