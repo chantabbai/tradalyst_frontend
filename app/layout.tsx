@@ -1,28 +1,31 @@
+
 import './globals.css'
 import { Metadata } from 'next'
+import { Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import { AuthProvider } from '@/context/AuthContext'
 import Link from 'next/link'
+import { AuthProvider } from '@/context/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
-const currentYear = new Date().getFullYear();
+const currentYear = new Date().getFullYear()
+
 export const metadata: Metadata = {
   title: 'Tradalyst',
   description: 'One stop solution for all your trading needs',
   metadataBase: new URL('https://tradalyst.com'),
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' }
-  ],
+    { color: 'white', media: '(prefers-color-scheme: light)' },
+    { color: 'black', media: '(prefers-color-scheme: dark)' }
+  ]
 }
 
 export default function RootLayout({
@@ -40,7 +43,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Toaster />
             <div className="relative flex min-h-screen flex-col">
               <Navbar />
               <div className="flex-1">
@@ -65,6 +67,7 @@ export default function RootLayout({
                 </div>
               </footer>
             </div>
+            <Toaster />
           </AuthProvider>
         </ThemeProvider>
       </body>
