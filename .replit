@@ -1,3 +1,4 @@
+
 modules = ["nodejs-20", "web"]
 run = "npm run dev"
 
@@ -6,6 +7,18 @@ channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "npm run dev"]
+deploymentTarget = "cloudrun"
+
+[[deployment.environments]]
+name = "production"
+branch = "main"
+mode = "production"
+
+[[deployment.environments]]
+name = "development"
+branch = "forDev"
+mode = "development"
+region = "dev"
 deploymentTarget = "cloudrun"
 
 [[ports]]

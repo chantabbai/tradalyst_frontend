@@ -31,11 +31,62 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      // Fetch user data using the token
-      fetchUserData(token);
-    }
+    const validateAndSetUser = async () => {
+      const token = localStorage.getItem('token')
+      const userId = localStorage.getItem('userId')
+      const userEmail = localStorage.getItem('userEmail')
+
+      if (!token || !userId) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      // Keep current auth state while validating
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: userEmail || ''
+      });
+
+      try {
+        // Validate token by making a request to the API
+        const response = await fetch(`/api/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          // Token is valid
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: userEmail || ''
+          });
+          const userData = await response.json();
+          setUser(prevUser => ({
+            ...prevUser,
+            ...userData
+          }));
+          // Keep the valid token
+          localStorage.setItem('token', token);
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userEmail');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error validating token:', error);
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
+      }
+    };
+
+    validateAndSetUser();
   }, [])
 
   const fetchUserData = async (token: string) => {
@@ -49,13 +100,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userData = await response.json();
         setUser(userData);
         setIsAuthenticated(true);
-      } else {
-        // If token is invalid, clear it
+        // Ensure token is still stored
+        localStorage.setItem('token', token);
+      } else if (response.status === 401) {
+        // Only remove token if it's actually invalid
         localStorage.removeItem('token');
+        setUser(null);
+        setIsAuthenticated(false);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
-      localStorage.removeItem('token');
+      // Don't remove token on network errors
+      setIsAuthenticated(false);
     }
   };
 
@@ -80,6 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (data.token && data.userId) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', email);
         setUser({ id: data.userId, email });
         setIsAuthenticated(true);
         return true;
