@@ -31,19 +31,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const userId = localStorage.getItem('userId')
-    if (token && userId) {
-      setIsAuthenticated(true);
-      setUser({
-        id: userId,
-        email: localStorage.getItem('userEmail') || ''
-      });
-      fetchUserData(token);
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
-    }
+    const validateAndSetUser = async () => {
+      const token = localStorage.getItem('token')
+      const userId = localStorage.getItem('userId')
+      const userEmail = localStorage.getItem('userEmail')
+
+      if (!token || !userId) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      try {
+        // Validate token by making a request to the API
+        const response = await fetch(`/api/users/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          // Token is valid
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: userEmail || ''
+          });
+          const userData = await response.json();
+          setUser(prevUser => ({
+            ...prevUser,
+            ...userData
+          }));
+          // Keep the valid token
+          localStorage.setItem('token', token);
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userEmail');
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('Error validating token:', error);
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
+      }
+    };
+
+    validateAndSetUser();
   }, [])
 
   const fetchUserData = async (token: string) => {
