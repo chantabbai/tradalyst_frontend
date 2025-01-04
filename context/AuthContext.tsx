@@ -50,29 +50,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
-  const fetchUserData = useCallback(async (token: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/users/me`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-        localStorage.setItem('token', token);
-      } else {
-        handleAuthError();
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   const handleAuthError = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
@@ -84,24 +61,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Initialization effect
   useEffect(() => {
     const initializeAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        handleAuthError();
-        setIsInitialized(true);
-        return;
-      }
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        
+        if (!token || !userId) {
+          handleAuthError();
+          setIsInitialized(true);
+          return;
+        }
 
-      const isValid = await validateToken(token);
-      if (isValid) {
-        await fetchUserData(token);
-      } else {
+        // Set initial state from localStorage
+        setIsAuthenticated(true);
+        setUser({ id: userId, email: localStorage.getItem('userEmail') || '' });
+        
+        // Validate token in background
+        const isValid = await validateToken(token);
+        if (!isValid) {
+          handleAuthError();
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
         handleAuthError();
+      } finally {
+        setIsInitialized(true);
+        setIsLoading(false);
       }
-      setIsInitialized(true);
     };
 
     initializeAuth();
-  }, [fetchUserData, validateToken, handleAuthError]);
+  }, [validateToken, handleAuthError]);
 
   // Periodic token validation
   useEffect(() => {
@@ -125,7 +115,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const response = await fetch(`/api/users/login`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -147,6 +136,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userEmail', email);
         setUser({ id: data.userId, email });
         setIsAuthenticated(true);
         return true;
@@ -154,10 +144,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return false;
     } catch (error) {
       console.error('Login error:', error);
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('An unexpected error occurred');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -166,6 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('userEmail');
     setUser(null);
     setIsAuthenticated(false);
     setLogoutMessage("You have been successfully logged out.");
@@ -257,6 +245,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       throw error;
     }
   };
+
+  if (!isInitialized) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <AuthContext.Provider value={{ 
