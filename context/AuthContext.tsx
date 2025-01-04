@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`/api/users/me`, {
+      const response = await fetch(`${API_BASE_URL}/users/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
