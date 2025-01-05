@@ -7,7 +7,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion']
+    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion', '@radix-ui/react-icons', 'lucide-react']
   },
   swcMinify: true,
   compiler: {
@@ -20,7 +20,34 @@ const nextConfig = {
   },
   webpack: (config, { dev, isServer }) => {
     if (!dev && !isServer) {
-      config.optimization.minimize = true;
+      config.optimization = {
+        ...config.optimization,
+        minimize: true,
+        mergeDuplicateChunks: true,
+        concatenateModules: true,
+        splitChunks: {
+          chunks: 'all',
+          minSize: 20000,
+          maxSize: 244000,
+          minChunks: 1,
+          maxAsyncRequests: 30,
+          maxInitialRequests: 30,
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            commons: {
+              name: 'commons',
+              chunks: 'all',
+              minChunks: 2,
+            },
+            recharts: {
+              test: /[\\/]node_modules[\\/](recharts)[\\/]/,
+              name: 'recharts',
+              chunks: 'all',
+            }
+          }
+        }
+      };
       config.optimization.minimizer.push(
         new TerserPlugin({
           terserOptions: {
