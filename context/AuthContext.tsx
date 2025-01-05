@@ -42,16 +42,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
-    const handleTabClose = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userEmail");
-      setUser(null);
-      setIsAuthenticated(false);
-    };
-
-    window.addEventListener('beforeunload', handleTabClose);
-
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
@@ -108,10 +98,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
 
     validateAndSetUser();
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleTabClose);
-    };
   }, []);
 
   const fetchUserData = async (token: string) => {
