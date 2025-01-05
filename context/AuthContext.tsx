@@ -59,19 +59,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = localStorage.getItem('token')
       const userId = localStorage.getItem('userId')
       const userEmail = localStorage.getItem('userEmail')
+      const tokenExpiry = localStorage.getItem('tokenExpiry')
 
-      if (!token || !userId) {
+      // Check if token exists and is not expired
+      if (!token || !userId || (tokenExpiry && new Date(tokenExpiry) < new Date())) {
         setIsAuthenticated(false);
         setUser(null);
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('tokenExpiry');
         return;
       }
 
-      // Keep current auth state while validating
-      setIsAuthenticated(true);
-      setUser({
-        id: userId,
-        email: userEmail || ''
-      });
+      // Set initial state with existing token
+      if (!isAuthenticated && token) {
+        setIsAuthenticated(true);
+        setUser({
+          id: userId,
+          email: userEmail || ''
+        });
+      }
 
       try {
         // Validate token by making a request to the API
@@ -83,16 +91,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         if (response.ok) {
           // Token is valid
-          setIsAuthenticated(true);
-          setUser({
-            id: userId,
-            email: userEmail || ''
-          });
           const userData = await response.json();
           setUser(prevUser => ({
             ...prevUser,
             ...userData
           }));
+          setIsAuthenticated(true);
+
+          // Update token expiry (24 hours from now)
+          const expiryDate = new Date();
+          expiryDate.setHours(expiryDate.getHours() + 24);
+          localStorage.setItem('tokenExpiry', expiryDate.toISOString());
+          
           // Keep the valid token
           localStorage.setItem('token', token);
         } else {
@@ -100,18 +110,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           localStorage.removeItem('token');
           localStorage.removeItem('userId');
           localStorage.removeItem('userEmail');
+          localStorage.removeItem('tokenExpiry');
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
         console.error('Error validating token:', error);
-        // Don't remove token on network errors
-        setIsAuthenticated(false);
+        // Keep current auth state on network errors
+        if (token && userId) {
+          setIsAuthenticated(true);
+        }
       }
     };
 
     validateAndSetUser();
-  }, [])
+  }, [isAuthenticated])
 
   const fetchUserData = async (token: string) => {
     try {
@@ -161,6 +174,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
         localStorage.setItem('userEmail', email);
+        
+        // Set token expiry (24 hours from login)
+        const expiryDate = new Date();
+        expiryDate.setHours(expiryDate.getHours() + 24);
+        localStorage.setItem('tokenExpiry', expiryDate.toISOString());
+        
         setUser({ id: data.userId, email });
         setIsAuthenticated(true);
         return true;
