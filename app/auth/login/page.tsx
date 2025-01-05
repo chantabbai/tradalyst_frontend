@@ -65,16 +65,14 @@ export default function Login() {
 
     setIsLoading(true)
     try {
+      setIsLoading(true)
       const success = await login(email, password)
       if (success) {
         toast({
           title: "Login Successful",
           description: "Welcome back to TradePro Journal!",
         } as any)
-        setIsLoading(true)
-        router.push('/dashboard').finally(() => {
-          setIsLoading(false)
-        })
+        await router.push('/dashboard')
       }
     } catch (error: any) {
       setServerError(error.message)
