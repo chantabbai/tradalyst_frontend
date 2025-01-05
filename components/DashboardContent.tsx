@@ -26,6 +26,7 @@ import { AutoSizer } from 'react-virtualized'
 import VirtualizedTable from 'react-virtualized/dist/es/Table'
 import debounce from 'lodash/debounce'
 
+
 interface ChartDataPoint {
   date: string;
   pnl: number;
