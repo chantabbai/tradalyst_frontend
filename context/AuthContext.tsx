@@ -63,8 +63,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       // Check if token exists and is not expired
       if (!token || !userId || (tokenExpiry && new Date(tokenExpiry) < new Date())) {
-        setIsAuthenticated(false);
         setUser(null);
+        setIsAuthenticated(false);
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('userEmail');
@@ -72,15 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return;
       }
 
-      // Set initial state with existing token
-      if (!isAuthenticated && token) {
-        setIsAuthenticated(true);
-        setUser({
-          id: userId,
-          email: userEmail || ''
-        });
-      }
-
+      // Don't set initial state here, wait for API validation
       try {
         // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
