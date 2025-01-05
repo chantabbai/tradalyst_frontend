@@ -7,7 +7,46 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion']
+    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion', '@radix-ui/react-icons', '@radix-ui/react-dialog', '@radix-ui/react-select']
+  },
+  webpack: (config) => {
+    config.optimization.splitChunks = {
+      chunks: 'all',
+      minSize: 20000,
+      maxSize: 90000,
+      cacheGroups: {
+        default: false,
+        vendors: false,
+        framework: {
+          chunks: 'all',
+          name: 'framework',
+          test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+          priority: 40,
+          enforce: true
+        },
+        commons: {
+          name: 'commons',
+          chunks: 'initial',
+          minChunks: 2,
+          priority: 20
+        },
+        lib: {
+          test(module: any) {
+            return module.size() > 50000 &&
+              /node_modules[/\\]/.test(module.identifier());
+          },
+          name(module: any) {
+            const hash = crypto.createHash('sha1');
+            hash.update(module.libIdent({ context: __dirname }));
+            return hash.digest('hex').substring(0, 8);
+          },
+          priority: 30,
+          minChunks: 1,
+          reuseExistingChunk: true
+        }
+      }
+    };
+    return config;
   },
   swcMinify: true,
   compiler: {

@@ -8,12 +8,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { ArrowDownIcon, ArrowUpIcon, DollarSign, Percent, InfoIcon, RefreshCcw } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Calendar } from "@/components/ui/calendar"
-import { TradeStatisticsCard } from './dashboard/TradeStatisticsCard'
-import { PerformanceMetricsCard } from './dashboard/PerformanceMetricsCard'
-import { PnLChartCard } from './dashboard/PnLChartCard'
-import { PnLCalendarCard } from './dashboard/PnLCalendarCard'
-import { TradingAnalyticsCard } from './dashboard/TradingAnalyticsCard'
-import { StrategyAnalysisCard } from './dashboard/StrategyAnalysisCard'
+import dynamic from 'next/dynamic'
+
+const TradeStatisticsCard = dynamic(() => import('./dashboard/TradeStatisticsCard'), { ssr: false })
+const PerformanceMetricsCard = dynamic(() => import('./dashboard/PerformanceMetricsCard'), { ssr: false })
+const PnLChartCard = dynamic(() => import('./dashboard/PnLChartCard'), { ssr: false })
+const PnLCalendarCard = dynamic(() => import('./dashboard/PnLCalendarCard'), { ssr: false })
+const TradingAnalyticsCard = dynamic(() => import('./dashboard/TradingAnalyticsCard'), { ssr: false })
+const StrategyAnalysisCard = dynamic(() => import('./dashboard/StrategyAnalysisCard'), { ssr: false })
 import {
   Table,
   TableBody,
