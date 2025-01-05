@@ -8,6 +8,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { ArrowDownIcon, ArrowUpIcon, DollarSign, Percent, InfoIcon, RefreshCcw } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Calendar } from "@/components/ui/calendar"
+import { TradeStatisticsCard } from './dashboard/TradeStatisticsCard'
+import { PerformanceMetricsCard } from './dashboard/PerformanceMetricsCard'
+import { PnLChartCard } from './dashboard/PnLChartCard'
+import { PnLCalendarCard } from './dashboard/PnLCalendarCard'
 import {
   Table,
   TableBody,
