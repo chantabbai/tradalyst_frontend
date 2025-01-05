@@ -7,7 +7,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 const nextConfig = {
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion', 'react-virtualized']
+    optimizePackageImports: ['recharts', '@heroicons/react', 'framer-motion']
   },
   swcMinify: true,
   compiler: {
@@ -16,27 +16,8 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
+  swcMinify: true,
   output: 'standalone',
-  modularizeImports: {
-    '@heroicons/react/24/outline': {
-      transform: '@heroicons/react/24/outline/{{member}}',
-    },
-    '@heroicons/react/24/solid': {
-      transform: '@heroicons/react/24/solid/{{member}}',
-    },
-    'recharts': {
-      transform: 'recharts/{{member}}',
-      skipDefaultConversion: true
-    }
-  },
-  webpack: (config) => {
-    config.optimization.minimize = true;
-    config.optimization.minimizer.push(
-      '...',
-      new (require('css-minimizer-webpack-plugin'))(),
-    );
-    return config;
-  },
   async headers() {
     return [
       {
@@ -63,4 +44,4 @@ const nextConfig = {
   }
 }
 
-module.exports = withBundleAnalyzer(nextConfig)
+module.exports = nextConfig
