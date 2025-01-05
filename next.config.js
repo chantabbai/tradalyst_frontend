@@ -12,6 +12,30 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
+    minify: true,
+  },
+  productionBrowserSourceMaps: false,
+  optimization: {
+    minimize: true,
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.minimize = true;
+      config.optimization.minimizer.push(
+        new TerserPlugin({
+          terserOptions: {
+            compress: {
+              drop_console: true,
+            },
+            mangle: true,
+            output: {
+              comments: false,
+            },
+          },
+        })
+      );
+    }
+    return config;
   },
   poweredByHeader: false,
   compress: true,
