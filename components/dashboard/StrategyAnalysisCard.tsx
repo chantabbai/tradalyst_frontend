@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, RechartsTooltip } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, Tooltip } from 'recharts'
 
 interface StrategyMetrics {
   strategy: string;
@@ -79,7 +79,7 @@ export function StrategyAnalysisCard({ strategyMetrics, sortConfig }: StrategyAn
                   <YAxis 
                     tickFormatter={(value) => formatProfit(value)}
                   />
-                  <RechartsTooltip
+                  <Tooltip
                     formatter={(value: number, name: string) => [
                       formatProfit(value),
                       name === 'totalPnL' ? 'Total P/L' : name
