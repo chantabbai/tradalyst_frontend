@@ -1,5 +1,4 @@
 
-/** @type {import('next').NextConfig} */
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
@@ -31,12 +30,12 @@ const nextConfig = {
           priority: 20
         },
         lib: {
-          test(module: any) {
+          test(module) {
             return module.size() > 50000 &&
               /node_modules[/\\]/.test(module.identifier());
           },
-          name(module: any) {
-            const hash = crypto.createHash('sha1');
+          name(module) {
+            const hash = require('crypto').createHash('sha1');
             hash.update(module.libIdent({ context: __dirname }));
             return hash.digest('hex').substring(0, 8);
           },
@@ -55,7 +54,6 @@ const nextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
-  swcMinify: true,
   output: 'standalone',
   async headers() {
     return [
