@@ -6,7 +6,8 @@ const instance = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Access-Control-Allow-Origin': '*'
   }
 });
 
@@ -20,6 +21,17 @@ instance.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle errors
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 502) {
+      console.error('Backend server error:', error);
+    }
     return Promise.reject(error);
   }
 );
