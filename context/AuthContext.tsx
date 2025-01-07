@@ -69,11 +69,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Maintain existing auth state
-      if (isAuthenticated && user?.id === userId) {
-        return;
-      }
-
+      // Set initial state from localStorage
+      setIsAuthenticated(true);
       setUser({
         id: userId,
         email: userEmail || "",
