@@ -42,6 +42,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
+    // Handle browser close or tab close
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
+    };
+
+    // Handle visibility change (tab hidden/visible)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleUnload();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
