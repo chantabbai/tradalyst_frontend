@@ -82,8 +82,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           }));
           // Keep the valid token
           localStorage.setItem("token", token);
-          // Redirect to dashboard for valid token
-          router.push("/dashboard");
         } else {
           // Token is invalid/expired
           localStorage.removeItem("token");
