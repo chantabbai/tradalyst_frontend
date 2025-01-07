@@ -69,8 +69,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Keep current auth state while validating
-      setIsAuthenticated(true);
+      // Maintain existing auth state
+      if (isAuthenticated && user?.id === userId) {
+        return;
+      }
+
       setUser({
         id: userId,
         email: userEmail || "",
@@ -87,14 +90,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         if (response.ok) {
           // Token is valid
           setIsAuthenticated(true);
-          setUser({
-            id: userId,
-            email: userEmail || "",
-          });
           const userData = await response.json();
           setUser((prevUser) => ({
             ...prevUser,
             ...userData,
+            id: userId,
+            email: userEmail || "",
           }));
           // Keep the valid token
           localStorage.setItem("token", token);
