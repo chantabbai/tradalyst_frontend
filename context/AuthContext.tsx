@@ -69,11 +69,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Maintain existing auth state if we already have a user
-      if (isAuthenticated && user?.id === userId) {
-        return;
-      }
-
       try {
         // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
@@ -84,27 +79,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
         if (response.ok) {
           // Token is valid
-          const userData = await response.json();
           setIsAuthenticated(true);
           setUser({
-            ...userData,
             id: userId,
-            email: userEmail || "",
+            email: userEmail || ''
           });
+          const userData = await response.json();
+          setUser(prevUser => ({
+            ...prevUser,
+            ...userData
+          }));
           // Keep the valid token
-          localStorage.setItem("token", token);
-        } else if (response.status === 401) {
-          // Only clear if token is explicitly invalid
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          localStorage.removeItem("userEmail");
+          localStorage.setItem('token', token);
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('userEmail');
           setUser(null);
           setIsAuthenticated(false);
         }
-        // For other errors, maintain current state
       } catch (error) {
-        console.error("Error validating token:", error);
-        // Maintain current auth state on network errors
+        console.error('Error validating token:', error);
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
       }
     };
 
