@@ -41,8 +41,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  
-
   useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
@@ -54,6 +52,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setUser(null);
         return;
       }
+
+      // Keep current auth state while validating
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: userEmail || "",
+      });
 
       try {
         // Validate token by making a request to the API
@@ -68,25 +73,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           setIsAuthenticated(true);
           setUser({
             id: userId,
-            email: userEmail || ''
+            email: userEmail || "",
           });
           const userData = await response.json();
-          setUser(prevUser => ({
+          setUser((prevUser) => ({
             ...prevUser,
-            ...userData
+            ...userData,
           }));
           // Keep the valid token
-          localStorage.setItem('token', token);
+          localStorage.setItem("token", token);
         } else {
           // Token is invalid/expired
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('userEmail');
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
         }
       } catch (error) {
-        console.error('Error validating token:', error);
+        console.error("Error validating token:", error);
         // Don't remove token on network errors
         setIsAuthenticated(false);
       }
