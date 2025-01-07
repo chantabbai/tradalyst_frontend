@@ -49,19 +49,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       localStorage.removeItem('userEmail');
     };
 
-    // Handle visibility change (tab hidden/visible)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        handleUnload();
-      }
-    };
-
+    // Only handle actual browser/tab close
     window.addEventListener('beforeunload', handleUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
