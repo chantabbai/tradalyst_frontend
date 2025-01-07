@@ -41,21 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    // Handle browser close or tab close
-    const handleUnload = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userEmail');
-    };
-
-    // Only handle actual browser/tab close
-    window.addEventListener('beforeunload', handleUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, []);
+  
 
   useEffect(() => {
     const validateAndSetUser = async () => {
