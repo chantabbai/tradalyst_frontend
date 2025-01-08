@@ -31,7 +31,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = process.env.BACKEND_API_URL;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -44,24 +44,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     // Handle browser close or tab close
     const handleUnload = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userEmail");
     };
 
     // Handle visibility change (tab hidden/visible)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState === "hidden") {
         handleUnload();
       }
     };
 
-    window.addEventListener('beforeunload', handleUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener("beforeunload", handleUnload);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
@@ -152,15 +152,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         },
-        body: JSON.stringify({ email, password }),
-      });
+      );
 
       const data = await response.json();
 
