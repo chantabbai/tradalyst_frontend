@@ -31,7 +31,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.BACKEND_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -40,6 +40,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    // Handle browser close or tab close
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
+    };
+
+    // Handle visibility change (tab hidden/visible)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleUnload();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     const validateAndSetUser = async () => {
@@ -62,7 +86,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        const response = await fetch(`/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -92,18 +116,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error validating token:", error);
-        // Keep existing auth state on network errors
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        const userEmail = localStorage.getItem("userEmail");
-        
-        if (token && userId) {
-          setIsAuthenticated(true);
-          setUser({
-            id: userId,
-            email: userEmail || "",
-          });
-        }
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
       }
     };
 
@@ -112,7 +126,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+      const response = await fetch(`/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -131,17 +145,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      // Keep existing auth state on network errors
-      const token = localStorage.getItem("token");
-      if (token) {
-        setIsAuthenticated(true);
-      }
+      // Don't remove token on network errors
+      setIsAuthenticated(false);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
         method: "POST",
         credentials: "include",
         headers: {
