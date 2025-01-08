@@ -1,32 +1,33 @@
-"use client";
 
-import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+"use client"
+
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
-  const router = useRouter();
-  const [isValidating, setIsValidating] = useState(true);
+  const { isAuthenticated } = useAuth()
+  const router = useRouter()
+  const [isValidating, setIsValidating] = useState(true)
 
   useEffect(() => {
     const validateSession = async () => {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem('token')
       // Only redirect if there's definitely no valid token
       if (!token) {
-        router.push("/auth/login");
+        router.push('/auth/login')
       }
-      setIsValidating(false);
-    };
+      setIsValidating(false)
+    }
 
-    validateSession();
-  }, [router]);
+    validateSession()
+  }, [router])
 
   // Show nothing while validating to prevent flash
   if (isValidating) {
-    return null;
+    return null
   }
 
   // Only show children if authenticated
-  return isAuthenticated ? <>{children}</> : null;
+  return isAuthenticated ? <>{children}</> : null
 }

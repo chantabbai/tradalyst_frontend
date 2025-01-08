@@ -31,7 +31,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.BACKEND_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -44,25 +44,84 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     // Handle browser close or tab close
     const handleUnload = () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("userEmail");
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
     };
 
     // Handle visibility change (tab hidden/visible)
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
+      if (document.visibilityState === 'hidden') {
         handleUnload();
       }
     };
 
-    window.addEventListener("beforeunload", handleUnload);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("beforeunload", handleUnload);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
+  }, []);
+
+  useEffect(() => {
+    const validateAndSetUser = async () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
+
+      if (!token || !userId) {
+        setIsAuthenticated(false);
+        setUser(null);
+        return;
+      }
+
+      // Keep current auth state while validating
+      setIsAuthenticated(true);
+      setUser({
+        id: userId,
+        email: userEmail || "",
+      });
+
+      try {
+        // Validate token by making a request to the API
+        const response = await fetch(`/api/users/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          // Token is valid
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: userEmail || "",
+          });
+          const userData = await response.json();
+          setUser((prevUser) => ({
+            ...prevUser,
+            ...userData,
+          }));
+          // Keep the valid token
+          localStorage.setItem("token", token);
+        } else {
+          // Token is invalid/expired
+          localStorage.removeItem("token");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("userEmail");
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Error validating token:", error);
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
+      }
+    };
+
+    validateAndSetUser();
   }, []);
 
   const fetchUserData = async (token: string) => {
@@ -72,68 +131,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           Authorization: `Bearer ${token}`,
         },
       });
-      
       if (response.ok) {
         const userData = await response.json();
         setUser(userData);
         setIsAuthenticated(true);
+        // Ensure token is still stored
         localStorage.setItem("token", token);
-        localStorage.setItem("userId", userData.id);
-        localStorage.setItem("userEmail", userData.email || "");
-        return true;
       } else if (response.status === 401) {
+        // Only remove token if it's actually invalid
         localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("userEmail");
         setUser(null);
         setIsAuthenticated(false);
-        router.push('/auth/login');
-        return false;
       }
-      return false;
     } catch (error) {
       console.error("Error fetching user data:", error);
+      // Don't remove token on network errors
       setIsAuthenticated(false);
-      return false;
     }
   };
 
-  useEffect(() => {
-    const validateAndSetUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setIsAuthenticated(false);
-        setUser(null);
-        return;
-      }
-
-      await fetchUserData(token);
-    };
-
-    validateAndSetUser();
-    
-    // Revalidate token periodically
-    const interval = setInterval(validateAndSetUser, 5 * 60 * 1000); // Every 5 minutes
-    
-    return () => clearInterval(interval);
-  }, [router]);
-
-  // Removed duplicate fetchUserData function
-
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ email, password }),
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
