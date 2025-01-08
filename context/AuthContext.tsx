@@ -62,7 +62,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`/api/users/me`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -102,7 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`/api/users/me`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
