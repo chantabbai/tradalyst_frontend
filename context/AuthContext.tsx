@@ -94,29 +94,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
         if (response.ok) {
           const userData = await response.json();
+          // Keep existing token and update user data
           setUser((prevUser) => ({
             ...prevUser,
             ...userData,
           }));
-          // Maintain authentication state
           setIsAuthenticated(true);
+          // Ensure token is saved
+          localStorage.setItem("token", token);
+          localStorage.setItem("userId", userId);
+          localStorage.setItem("userEmail", userEmail || "");
         } else if (response.status === 401) {
-          // Only clear on explicit unauthorized response
+          // Clear only on explicit token expiry/invalid
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
+          router.push('/auth/login');
         }
-        // For other error statuses, maintain current auth state
+        // For other errors, keep existing token and state
       } catch (error) {
         console.error("Error validating token:", error);
-        // On network errors, maintain current auth state
+        // Keep existing token and state on network errors
       }
     };
 
     validateAndSetUser();
-  }, []);
+  }, [router]);
 
   const fetchUserData = async (token: string) => {
     try {
