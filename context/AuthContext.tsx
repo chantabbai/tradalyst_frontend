@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Keep current auth state while validating
+      // Set initial auth state from localStorage
       setIsAuthenticated(true);
       setUser({
         id: userId,
@@ -93,31 +93,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         });
 
         if (response.ok) {
-          // Token is valid
-          setIsAuthenticated(true);
-          setUser({
-            id: userId,
-            email: userEmail || "",
-          });
           const userData = await response.json();
           setUser((prevUser) => ({
             ...prevUser,
             ...userData,
           }));
-          // Keep the valid token
-          localStorage.setItem("token", token);
-        } else {
-          // Token is invalid/expired
+          // Maintain authentication state
+          setIsAuthenticated(true);
+        } else if (response.status === 401) {
+          // Only clear on explicit unauthorized response
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
         }
+        // For other error statuses, maintain current auth state
       } catch (error) {
         console.error("Error validating token:", error);
-        // Don't remove token on network errors
-        setIsAuthenticated(false);
+        // On network errors, maintain current auth state
       }
     };
 
