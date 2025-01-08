@@ -86,15 +86,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`/api/users/me`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL|| "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           },
         });
 
         if (response.ok) {
           const userData = await response.json();
-          // Keep existing token and update user data
           setUser((prevUser) => ({
             ...prevUser,
             ...userData,
@@ -105,18 +106,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           localStorage.setItem("userId", userId);
           localStorage.setItem("userEmail", userEmail || "");
         } else if (response.status === 401) {
-          // Clear only on explicit token expiry/invalid
+          // Only clear on unauthorized
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
           router.push('/auth/login');
+        } else if (response.status === 502) {
+          // On backend error, keep existing session
+          console.error("Backend server error - maintaining current session");
+          return;
         }
         // For other errors, keep existing token and state
       } catch (error) {
         console.error("Error validating token:", error);
         // Keep existing token and state on network errors
+        return;
       }
     };
 
