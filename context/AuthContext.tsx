@@ -92,8 +92,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error validating token:", error);
-        // Don't remove token on network errors
-        setIsAuthenticated(false);
+        // Keep existing auth state on network errors
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
+        const userEmail = localStorage.getItem("userEmail");
+        
+        if (token && userId) {
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: userEmail || "",
+          });
+        }
       }
     };
 
@@ -121,8 +131,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      // Don't remove token on network errors
-      setIsAuthenticated(false);
+      // Keep existing auth state on network errors
+      const token = localStorage.getItem("token");
+      if (token) {
+        setIsAuthenticated(true);
+      }
     }
   };
 
