@@ -118,31 +118,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return () => clearInterval(interval);
   }, [router]);
 
-  const fetchUserData = async (token: string) => {
-    try {
-      const response = await fetch(`/api/users/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-        // Ensure token is still stored
-        localStorage.setItem("token", token);
-      } else if (response.status === 401) {
-        // Only remove token if it's actually invalid
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      // Don't remove token on network errors
-      setIsAuthenticated(false);
-    }
-  };
+  // Removed duplicate fetchUserData function
 
   const login = async (email: string, password: string) => {
     try {
