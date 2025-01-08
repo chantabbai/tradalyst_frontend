@@ -13,21 +13,20 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const validateSession = async () => {
       const token = localStorage.getItem('token')
-      // Only redirect if there's definitely no valid token
-      if (!token) {
+      if (!token && !isAuthenticated) {
         router.push('/auth/login')
       }
       setIsValidating(false)
     }
 
     validateSession()
-  }, [router])
+  }, [router, isAuthenticated])
 
   // Show nothing while validating to prevent flash
   if (isValidating) {
     return null
   }
 
-  // Only show children if authenticated
-  return isAuthenticated ? <>{children}</> : null
+  // Show children if there's a token, even while validating auth state
+  return localStorage.getItem('token') ? <>{children}</> : null
 }
