@@ -65,60 +65,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     };
   }, []);
 
+  const fetchUserData = async (token: string) => {
+    try {
+      const response = await fetch(`/api/users/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setIsAuthenticated(true);
+        localStorage.setItem("token", token);
+        localStorage.setItem("userId", userData.id);
+        localStorage.setItem("userEmail", userData.email || "");
+        return true;
+      } else if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userEmail");
+        setUser(null);
+        setIsAuthenticated(false);
+        router.push('/auth/login');
+        return false;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setIsAuthenticated(false);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      const userEmail = localStorage.getItem("userEmail");
-
-      if (!token || !userId) {
+      if (!token) {
         setIsAuthenticated(false);
         setUser(null);
         return;
       }
 
-      try {
-        // Validate token by making a request to the API
-        const response = await fetch(`/api/users/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          // Set user data and maintain authentication state
-          setUser({
-            id: userId,
-            email: userEmail || "",
-            ...userData,
-          });
-          setIsAuthenticated(true);
-          // Ensure token persistence
-          localStorage.setItem("token", token);
-          localStorage.setItem("userId", userId);
-          localStorage.setItem("userEmail", userEmail || "");
-        } else if (response.status === 401) {
-          // Only clear on explicit token invalidity
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          localStorage.removeItem("userEmail");
-          setUser(null);
-          setIsAuthenticated(false);
-          router.push('/auth/login');
-        }
-        // For other errors, maintain existing state
-      } catch (error) {
-        console.error("Error validating token:", error);
-        if (userId && token) {
-          // Maintain session on network errors if token exists
-          setUser({
-            id: userId,
-            email: userEmail || "",
-          });
-          setIsAuthenticated(true);
-        }
-      }
+      await fetchUserData(token);
     };
 
     validateAndSetUser();
