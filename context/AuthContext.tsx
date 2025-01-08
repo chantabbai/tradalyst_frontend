@@ -77,13 +77,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Set initial auth state from localStorage
-      setIsAuthenticated(true);
-      setUser({
-        id: userId,
-        email: userEmail || "",
-      });
-
       try {
         // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
@@ -94,18 +87,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
         if (response.ok) {
           const userData = await response.json();
-          // Keep existing token and update user data
-          setUser((prevUser) => ({
-            ...prevUser,
+          // Set user data and maintain authentication state
+          setUser({
+            id: userId,
+            email: userEmail || "",
             ...userData,
-          }));
+          });
           setIsAuthenticated(true);
-          // Ensure token is saved
+          // Ensure token persistence
           localStorage.setItem("token", token);
           localStorage.setItem("userId", userId);
           localStorage.setItem("userEmail", userEmail || "");
         } else if (response.status === 401) {
-          // Clear only on explicit token expiry/invalid
+          // Only clear on explicit token invalidity
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
@@ -113,14 +107,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           setIsAuthenticated(false);
           router.push('/auth/login');
         }
-        // For other errors, keep existing token and state
+        // For other errors, maintain existing state
       } catch (error) {
         console.error("Error validating token:", error);
-        // Keep existing token and state on network errors
+        if (userId && token) {
+          // Maintain session on network errors if token exists
+          setUser({
+            id: userId,
+            email: userEmail || "",
+          });
+          setIsAuthenticated(true);
+        }
       }
     };
 
     validateAndSetUser();
+    
+    // Revalidate token periodically
+    const interval = setInterval(validateAndSetUser, 5 * 60 * 1000); // Every 5 minutes
+    
+    return () => clearInterval(interval);
   }, [router]);
 
   const fetchUserData = async (token: string) => {
