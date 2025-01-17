@@ -8,6 +8,12 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsToolti
 import { ArrowDownIcon, ArrowUpIcon, DollarSign, Percent, InfoIcon, RefreshCcw } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { Calendar } from "@/components/ui/calendar"
+import { TradeStatisticsCard } from './dashboard/TradeStatisticsCard'
+import { PerformanceMetricsCard } from './dashboard/PerformanceMetricsCard'
+import { PnLChartCard } from './dashboard/PnLChartCard'
+import { PnLCalendarCard } from './dashboard/PnLCalendarCard'
+import { TradingAnalyticsCard } from './dashboard/TradingAnalyticsCard'
+import { StrategyAnalysisCard } from './dashboard/StrategyAnalysisCard'
 import {
   Table,
   TableBody,
@@ -682,119 +688,10 @@ export default function DashboardContent() {
           </CardContent>
         </Card>
 
-        {/* Trading Analytics Card (formerly Trading Performance Card) */}
-        <MetricCard
-          title={
-            <div className="flex items-center gap-2">
-              <span>Trading Analytics</span>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-sm p-4">
-                    <div className="space-y-3 text-sm">
-                      <p className="font-medium">
-                        <span className="text-primary">Consistency Score:</span> 
-                        <span className="text-muted-foreground">Combined measure of win ratio (40%), profit factor (30%), and trade frequency (30%). Shows overall trading system stability.</span>
-                      </p>
-                      <p className="font-medium">
-                        <span className="text-primary">Profit Factor:</span> 
-                        <span className="text-muted-foreground">Ratio of gross profits to gross losses. Measures trading system efficiency.</span>
-                      </p>
-                      <div className="pl-4 text-muted-foreground">
-                        <p>• Red (&lt;1.0): Losing system</p>
-                        <p>• Yellow (1.0-1.5): Marginally profitable</p>
-                        <p>• Green (&gt;1.5): Profitable system</p>
-                      </div>
-                      <p className="font-medium">
-                        <span className="text-primary">Average Duration:</span> 
-                        <span className="text-muted-foreground">Average holding period of trades. Indicates trading style (day trading, swing trading, etc.).</span>
-                      </p>
-                      <p className="font-medium">
-                        <span className="text-primary">Maximum Drawdown:</span> 
-                        <span className="text-muted-foreground">Largest peak-to-trough decline in account value. Key risk management metric.</span>
-                      </p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-          }
-          value={
-            <div className="space-y-4">
-              {/* Consistency Score - Most important overall metric */}
-              <div className="space-y-2">
-                <div className="text-xs text-muted-foreground">Consistency Score</div>
-                <div className={`text-lg font-semibold ${
-                  (isNumber(profitMetrics?.consistencyScore) && profitMetrics.consistencyScore >= 70) ? 'text-green-600' :
-                  (isNumber(profitMetrics?.consistencyScore) && profitMetrics.consistencyScore >= 50) ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {isNumber(profitMetrics?.consistencyScore) 
-                    ? `${profitMetrics.consistencyScore.toFixed(1)}%` 
-                    : '0.0%'}
-                </div>
-                <div className="w-full bg-secondary/20 rounded-full h-1.5">
-                  <div 
-                    className={`h-1.5 rounded-full transition-all ${
-                      (isNumber(profitMetrics?.consistencyScore) && profitMetrics.consistencyScore >= 70) ? 'bg-green-500' :
-                      (isNumber(profitMetrics?.consistencyScore) && profitMetrics.consistencyScore >= 50) ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    }`}
-                    style={{ width: `${profitMetrics?.consistencyScore ?? 0}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Profit Factor - Key profitability metric */}
-              <div className="pt-2 border-t space-y-2">
-                <div className="text-xs text-muted-foreground">Profit Factor</div>
-                <div className={`text-lg font-semibold ${
-                  isNumber(profitMetrics?.profitFactor) && profitMetrics.profitFactor >= 1.5 ? 'text-green-600' :
-                  isNumber(profitMetrics?.profitFactor) && profitMetrics.profitFactor >= 1 ? 'text-yellow-600' :
-                  'text-red-600'
-                }`}>
-                  {isNumber(profitMetrics?.profitFactor) 
-                    ? profitMetrics.profitFactor.toFixed(2) 
-                    : '0.00'}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-xs text-muted-foreground">
-                    <span className="block">Gross Profit</span>
-                    <span className="text-green-600 font-medium">
-                      {formatProfit(profitMetrics.grossProfits)}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    <span className="block">Gross Loss</span>
-                    <span className="text-red-600 font-medium">
-                      {formatProfit(profitMetrics.grossLosses)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Average Duration - Trading style indicator */}
-              <div className="pt-2 border-t space-y-2">
-                <div className="text-xs text-muted-foreground">Average Trade Duration</div>
-                <div className="text-lg font-semibold">
-                  {isNumber(durationMetrics?.averageDuration) 
-                    ? `${Math.round(durationMetrics.averageDuration)} days`
-                    : '0 days'}
-                </div>
-              </div>
-
-              {/* Maximum Drawdown - Risk metric */}
-              <div className="pt-2 border-t space-y-2">
-                <div className="text-xs text-muted-foreground">Maximum Drawdown</div>
-                <div className="text-lg font-semibold text-red-600">
-                  {formatProfit(profitMetrics?.maxDrawdown)}
-                </div>
-              </div>
-            </div>
-          }
-          icon={null}
+        {/* Trading Analytics Card */}
+        <TradingAnalyticsCard
+          profitMetrics={profitMetrics}
+          durationMetrics={durationMetrics}
         />
       </div>
 
@@ -1197,119 +1094,10 @@ export default function DashboardContent() {
       </div>
 
       {/* Strategy P/L Analysis Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-            <CardTitle className="text-base sm:text-lg font-semibold">Strategy P/L Analysis</CardTitle>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Table</span>
-              <Switch
-                checked={showStrategyChart}
-                onCheckedChange={setShowStrategyChart}
-              />
-              <span className="text-sm font-medium">Chart</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            {showStrategyChart ? (
-              <div className="h-[300px] sm:h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart 
-                    data={strategyMetrics.slice(0, 10)}
-                    margin={{ top: 5, right: 30, left: 80, bottom: 65 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis 
-                      dataKey="strategy" 
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                      interval={0}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis 
-                      tickFormatter={(value) => formatProfit(value)}
-                    />
-                    <RechartsTooltip
-                      formatter={(value: number, name: string) => [
-                        formatProfit(value),
-                        name === 'totalPnL' ? 'Total P/L' : name
-                      ]}
-                      contentStyle={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        borderRadius: '6px',
-                        padding: '8px',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                      }}
-                      cursor={{ fill: 'transparent' }}
-                    />
-                    <Bar 
-                      dataKey="totalPnL" 
-                      name="Total P/L"
-                    >
-                      {strategyMetrics.slice(0, 10).map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`}
-                          fill={entry.totalPnL >= 0 ? '#16a34a' : '#dc2626'}
-                          fillOpacity={0.8}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                {strategyMetrics.length > 10 && (
-                  <div className="text-sm text-muted-foreground text-center mt-2">
-                    * Showing top 10 strategies by P/L. See table view for complete list.
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="h-[400px] w-full overflow-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="font-medium">Strategy</TableHead>
-                      <TableHead className="font-medium text-right">Total P/L</TableHead>
-                      <TableHead className="font-medium text-right">Trade Count</TableHead>
-                      <TableHead className="font-medium text-right">Win Rate</TableHead>
-                      <TableHead className="font-medium text-right">Avg P/L</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedStrategyMetrics.map((strategy, index) => (
-                      <TableRow 
-                        key={index}
-                        className="hover:bg-muted/50 transition-colors"
-                      >
-                        <TableCell className="font-medium">{strategy.strategy}</TableCell>
-                        <TableCell className={`text-right ${
-                          strategy.totalPnL >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {formatProfit(strategy.totalPnL)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {strategy.tradeCount}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {(strategy.winRatio * 100).toFixed(2)}%
-                        </TableCell>
-                        <TableCell className={`text-right ${
-                          strategy.avgPnL >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {formatProfit(strategy.avgPnL)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      <StrategyAnalysisCard 
+        strategyMetrics={strategyMetrics}
+        sortConfig={sortConfig}
+      />
     </div>
   )
 }

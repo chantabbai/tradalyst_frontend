@@ -65,13 +65,14 @@ export default function Login() {
 
     setIsLoading(true)
     try {
+      setIsLoading(true)
       const success = await login(email, password)
       if (success) {
         toast({
           title: "Login Successful",
           description: "Welcome back to TradePro Journal!",
         } as any)
-        router.push('/dashboard')
+        await router.push('/dashboard')
       }
     } catch (error: any) {
       setServerError(error.message)
@@ -86,7 +87,16 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-4">
+    <>
+      {isLoading && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="space-y-4 text-center">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <p className="text-lg text-muted-foreground">Loading dashboard...</p>
+          </div>
+        </div>
+      )}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/10 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
@@ -217,5 +227,6 @@ export default function Login() {
         </CardFooter>
       </Card>
     </div>
+    </>
   )
 }
