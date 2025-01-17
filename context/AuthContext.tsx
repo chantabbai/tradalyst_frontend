@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         console.log("Validating token with API...");
         // Validate token by making a request to the API
-        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
