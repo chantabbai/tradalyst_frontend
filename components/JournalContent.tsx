@@ -168,7 +168,7 @@ export default function JournalContent() {
   const handleAddTrade = async () => {
     console.log('handleAddTrade called', newTrade);
     const errors: {[key: string]: string} = {};
-    
+
     // Validation for required fields
     if (!newTrade.symbol) {
         errors.symbol = "Symbol is required";
@@ -214,10 +214,10 @@ export default function JournalContent() {
         console.log('Sending trade to backend:', tradeToSave);
         const response = await axiosInstance.post('/api/trades', tradeToSave);
         console.log('Response from backend:', response.data);
-        
+
         // Update the trades state with the new trade
         setTrades(prevTrades => [...prevTrades, response.data]);
-        
+
         // Reset the form to default values including radio buttons
         setNewTrade({
             date: '',
@@ -230,16 +230,16 @@ export default function JournalContent() {
             strategy: '', // Keep strategy as empty string
             notes: '',
         });
-        
+
         // Clear any form errors
         setFormErrors({});
         setPriceError(null);
-        
+
         toast({
             title: "Trade Added",
             description: "Your trade has been successfully added to the journal.",
         } as any);
-        
+
         fetchTrades();
     } catch (error) {
         console.error('Error adding trade:', error.response?.data || error.message);
@@ -297,7 +297,7 @@ export default function JournalContent() {
   const handleRecordExit = async () => {
     if (exitingTrade) {
       const errors: {[key: string]: string} = {};
-      
+
       if (!exitingTrade.exitDate) {
         errors.exitDate = "Exit Date is required";
       }
@@ -411,7 +411,7 @@ export default function JournalContent() {
         runDate, action, symbol, description, type,
         quantity, price, commission, fees, _, amount
       ] = row.split('\t');
-      
+
       return {
         runDate,
         action,
@@ -536,7 +536,7 @@ export default function JournalContent() {
             .replace(/^\uFEFF/, '')
             .replace(/\r\n/g, '\n')
             .replace(/\r/g, '\n');
-          
+
           content = content
             .split('\n')
             .filter(line => line.trim().length > 0)
@@ -566,9 +566,9 @@ export default function JournalContent() {
       }
     } catch (error: any) {
       console.error('Error uploading file:', error);
-      
+
       let errorMessage = "Failed to import trades. Please check the file format.";
-      
+
       if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.message === 'Failed to read file') {
@@ -576,7 +576,7 @@ export default function JournalContent() {
       } else if (error.message === 'File is empty') {
         errorMessage = "The file appears to be empty.";
       }
-      
+
       setImportError(errorMessage);
     } finally {
       setIsImporting(false);
@@ -633,7 +633,7 @@ export default function JournalContent() {
   // Update the validateTrade function to show all validation errors
   const validateTrade = (trade: Partial<Trade>) => {
     const errors: {[key: string]: string} = {};
-    
+
     if (!trade.symbol) {
       errors.symbol = "Symbol is required";
     }
@@ -687,7 +687,7 @@ export default function JournalContent() {
                             const newTrades = [...bulkTrades];
                             newTrades[index] = { ...trade, date: e.target.value };
                             setBulkTrades(newTrades);
-                            
+
                             // Validate immediately
                             const errors = validateTrade(newTrades[index]);
                             const newErrors = { ...bulkErrors };
@@ -721,7 +721,7 @@ export default function JournalContent() {
                             const newTrades = [...bulkTrades];
                             newTrades[index] = { ...trade, symbol: e.target.value.toUpperCase() };
                             setBulkTrades(newTrades);
-                            
+
                             // Validate immediately
                             const errors = validateTrade(newTrades[index]);
                             const newErrors = { ...bulkErrors };
@@ -768,7 +768,7 @@ export default function JournalContent() {
                             <SelectItem value="option">Option</SelectItem>
                           </SelectContent>
                         </Select>
-                        
+
                         {trade.type === 'option' && (
                           <Select
                             value={trade.optionType}
@@ -816,7 +816,7 @@ export default function JournalContent() {
                             const newTrades = [...bulkTrades];
                             newTrades[index] = { ...trade, quantity: Number(e.target.value) };
                             setBulkTrades(newTrades);
-                            
+
                             // Validate immediately
                             const errors = validateTrade(newTrades[index]);
                             const newErrors = { ...bulkErrors };
@@ -850,7 +850,7 @@ export default function JournalContent() {
                             const newTrades = [...bulkTrades];
                             newTrades[index] = { ...trade, price: Number(e.target.value) };
                             setBulkTrades(newTrades);
-                            
+
                             // Validate immediately
                             const errors = validateTrade(newTrades[index]);
                             const newErrors = { ...bulkErrors };
@@ -884,7 +884,7 @@ export default function JournalContent() {
                             const newTrades = [...bulkTrades];
                             newTrades[index] = { ...trade, strategy: e.target.value };
                             setBulkTrades(newTrades);
-                            
+
                             // Validate immediately
                             const errors = validateTrade(newTrades[index]);
                             const newErrors = { ...bulkErrors };
@@ -916,11 +916,11 @@ export default function JournalContent() {
                         onClick={() => {
                           const newTrades = bulkTrades.filter((_, i) => i !== index);
                           setBulkTrades(newTrades);
-                          
+
                           // Clear errors for the deleted row and reindex remaining errors
                           const newErrors = { ...bulkErrors };
                           delete newErrors[index];
-                          
+
                           // Reindex errors for remaining rows
                           const reindexedErrors: {[key: number]: {[key: string]: string}} = {};
                           Object.keys(newErrors).forEach((key) => {
@@ -931,7 +931,7 @@ export default function JournalContent() {
                               reindexedErrors[numKey] = newErrors[numKey];
                             }
                           });
-                          
+
                           setBulkErrors(reindexedErrors);
                         }}
                       >
@@ -1152,7 +1152,7 @@ export default function JournalContent() {
           />
           <span className="text-sm text-muted-foreground">Bulk</span>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <input
             type="file"
@@ -1451,12 +1451,12 @@ export default function JournalContent() {
 function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trade: Trade) => void, onExit: (trade: Trade) => void }) {
   const isClosedTab = trades.some(trade => trade.status === 'CLOSED');
   const hasPartiallyClosedTrades = trades.some(trade => trade.status === 'PARTIALLY_CLOSED');
-  
+
   // Set default sort column based on the tab
   const [sortColumn, setSortColumn] = useState<keyof Trade>(isClosedTab ? 'exitDate' : 'entryDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const { toast } = useToast();
-  
+
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -1721,7 +1721,7 @@ function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trad
                           : 'text-red-600 dark:text-red-400'}
                         font-medium
                       `}>
-                        ${trade.totalProfit?.toFixed(2)}
+                        {trade.totalProfit?.toFixed(2)}
                         <br />
                         <span className="text-sm">
                           {trade.totalProfitPercentage !== undefined && trade.totalProfitPercentage !== null
@@ -1752,6 +1752,33 @@ function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trad
                         >
                           Exit
                         </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            if (window.confirm('Are you sure you want to delete this trade?')) {
+                              axiosInstance.delete(`/api/trades/${trade.id}`)
+                                .then(() => {
+                                  toast({
+                                    title: "Success",
+                                    description: "Trade deleted successfully",
+                                  });
+                                  fetchTrades();
+                                })
+                                .catch((error) => {
+                                  console.error('Error deleting trade:', error);
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to delete trade",
+                                    variant: "destructive",
+                                  });
+                                });
+                            }
+                          }}
+                          className="hover:bg-red-500/10 dark:hover:bg-red-400/10"
+                        >
+                          Delete
+                        </Button>
                       </div>
                     )}
                   </TableCell>
@@ -1761,7 +1788,7 @@ function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trad
           </TableBody>
         </Table>
       </div>
-      
+
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows per page:</span>
