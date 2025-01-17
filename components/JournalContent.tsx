@@ -1276,10 +1276,10 @@ export default function JournalContent() {
           <TabsTrigger value="closed">Closed Trades</TabsTrigger>
         </TabsList>
         <TabsContent value="open">
-          <TradeTable trades={openTrades} onEdit={handleEditTrade} onExit={handleExitTrade} />
+          <TradeTable trades={openTrades} onEdit={handleEditTrade} onExit={handleExitTrade} onFetchTrades={fetchTrades}/>
         </TabsContent>
         <TabsContent value="closed">
-          <TradeTable trades={closedTrades} onEdit={handleEditTrade} onExit={handleExitTrade} />
+          <TradeTable trades={closedTrades} onEdit={handleEditTrade} onExit={handleExitTrade} onFetchTrades={fetchTrades}/>
         </TabsContent>
       </Tabs>
 
@@ -1448,7 +1448,7 @@ export default function JournalContent() {
   )
 }
 
-function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trade: Trade) => void, onExit: (trade: Trade) => void }) {
+function TradeTable({ trades, onEdit, onExit, onFetchTrades }: { trades: Trade[], onEdit: (trade: Trade) => void, onExit: (trade: Trade) => void, onFetchTrades: () => void }) {
   const isClosedTab = trades.some(trade => trade.status === 'CLOSED');
   const hasPartiallyClosedTrades = trades.some(trade => trade.status === 'PARTIALLY_CLOSED');
 
@@ -1763,7 +1763,7 @@ function TradeTable({ trades, onEdit, onExit }: { trades: Trade[], onEdit: (trad
                                     title: "Success",
                                     description: "Trade deleted successfully",
                                   });
-                                  fetchTrades();
+                                  onFetchTrades();
                                 })
                                 .catch((error) => {
                                   console.error('Error deleting trade:', error);
