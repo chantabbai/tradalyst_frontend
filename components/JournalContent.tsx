@@ -1619,7 +1619,7 @@ function TradeTable({ trades, onEdit, onExit, onFetchTrades }: { trades: Trade[]
               {isClosedTab && <SortableHeader column="exitPrice" className="whitespace-nowrap">Exit Price</SortableHeader>}
               {isClosedTab && <SortableHeader column="exitDate" className="whitespace-nowrap">Exit Date</SortableHeader>}
               {(isClosedTab || hasPartiallyClosedTrades) && <SortableHeader column="totalProfit" className="whitespace-nowrap">P/L</SortableHeader>}
-              {(!isClosedTab || hasPartiallyClosedTrades) && <TableHead className="whitespace-nowrap">Actions</TableHead>}
+              <TableHead className="whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -1732,57 +1732,57 @@ function TradeTable({ trades, onEdit, onExit, onFetchTrades }: { trades: Trade[]
                     ) : '-'}
                   </TableCell>
                 )}
-                {(!isClosedTab || hasPartiallyClosedTrades) && (
-                  <TableCell className="whitespace-nowrap">
-                    {(trade.status === 'OPEN' || trade.status === 'PARTIALLY_CLOSED') && (
-                      <div className="space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => onEdit(trade)}
-                          className="hover:bg-blue-500/10 dark:hover:bg-blue-400/10"
-                        >
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => onExit(trade)} 
-                          className="hover:bg-green-500/10 dark:hover:bg-green-400/10"
-                        >
-                          Exit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => {
-                            if (window.confirm('Are you sure you want to delete this trade?')) {
-                              axiosInstance.delete(`/api/trades/${trade.id}`)
-                                .then(() => {
-                                  toast({
-                                    title: "Success",
-                                    description: "Trade deleted successfully",
-                                  });
-                                  onFetchTrades();
-                                })
-                                .catch((error) => {
-                                  console.error('Error deleting trade:', error);
-                                  toast({
-                                    title: "Error",
-                                    description: "Failed to delete trade",
-                                    variant: "destructive",
-                                  });
+                <TableCell className="whitespace-nowrap">
+                    <div className="space-x-2">
+                      {(trade.status === 'OPEN' || trade.status === 'PARTIALLY_CLOSED') && (
+                        <>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => onEdit(trade)}
+                            className="hover:bg-blue-500/10 dark:hover:bg-blue-400/10"
+                          >
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => onExit(trade)} 
+                            className="hover:bg-green-500/10 dark:hover:bg-green-400/10"
+                          >
+                            Exit
+                          </Button>
+                        </>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this trade?')) {
+                            axiosInstance.delete(`/api/trades/${trade.id}`)
+                              .then(() => {
+                                toast({
+                                  title: "Success",
+                                  description: "Trade deleted successfully",
                                 });
-                            }
-                          }}
-                          className="hover:bg-red-500/10 dark:hover:bg-red-400/10"
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    )}
+                                onFetchTrades();
+                              })
+                              .catch((error) => {
+                                console.error('Error deleting trade:', error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to delete trade",
+                                  variant: "destructive",
+                                });
+                              });
+                          }
+                        }}
+                        className="hover:bg-red-500/10 dark:hover:bg-red-400/10"
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
-                )}
               </TableRow>
             ))}
           </TableBody>
