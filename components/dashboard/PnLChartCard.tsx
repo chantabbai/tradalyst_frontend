@@ -97,6 +97,10 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                 <RechartsTooltip
                   formatter={(value: number) => [formatProfit(value), 'P/L']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                  contentStyle={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+                  wrapperStyle={{ outline: 'none' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
+                  labelStyle={{ color: 'var(--foreground)' }}
                 />
                 <Line 
                   type="monotone" 
