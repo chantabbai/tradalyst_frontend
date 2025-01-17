@@ -13,7 +13,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const validateSession = async () => {
       const token = localStorage.getItem('token')
-      if (!token || !isAuthenticated) {
+      // Only redirect if there's definitely no valid token
+      if (!token) {
         router.push('/auth/login')
       }
       setIsValidating(false)

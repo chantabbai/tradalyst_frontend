@@ -42,6 +42,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
+    // Handle browser close or tab close
+    const handleUnload = () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userEmail');
+    };
+
+    // Handle visibility change (tab hidden/visible)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleUnload();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
@@ -53,7 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         return;
       }
 
-      // Set initial state from localStorage
+      // Keep current auth state while validating
       setIsAuthenticated(true);
       setUser({
         id: userId,
@@ -61,21 +85,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       try {
+        // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          credentials: "include",
         });
 
         if (response.ok) {
+          // Token is valid
+          setIsAuthenticated(true);
+          setUser({
+            id: userId,
+            email: userEmail || "",
+          });
           const userData = await response.json();
           setUser((prevUser) => ({
             ...prevUser,
             ...userData,
           }));
-          setIsAuthenticated(true);
-        } else if (response.status === 401) {
+          // Keep the valid token
+          localStorage.setItem("token", token);
+        } else {
+          // Token is invalid/expired
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
@@ -84,32 +116,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error validating token:", error);
+        // Don't remove token on network errors
+        setIsAuthenticated(false);
       }
     };
 
     validateAndSetUser();
-  }, []);
-
-  // Add rehydration mechanism
-  useEffect(() => {
-    const rehydrateAuth = () => {
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
-      const userEmail = localStorage.getItem("userEmail");
-
-      if (token && userId) {
-        setUser({
-          id: userId,
-          email: userEmail || "",
-        });
-        setIsAuthenticated(true);
-      }
-    };
-
-    window.addEventListener("load", rehydrateAuth);
-    return () => {
-      window.removeEventListener("load", rehydrateAuth);
-    };
   }, []);
 
   const fetchUserData = async (token: string) => {
@@ -118,35 +130,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        credentials: "include",
       });
-
-      if (!response.ok) throw new Error("Token validation failed");
-
-      const userData = await response.json();
-      setUser(userData);
-      setIsAuthenticated(true);
-      localStorage.setItem("token", token);
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+        setIsAuthenticated(true);
+        // Ensure token is still stored
+        localStorage.setItem("token", token);
+      } else if (response.status === 401) {
+        // Only remove token if it's actually invalid
+        localStorage.removeItem("token");
+        setUser(null);
+        setIsAuthenticated(false);
+      }
     } catch (error) {
-      console.error("Token validation error:", error);
+      console.error("Error fetching user data:", error);
+      // Don't remove token on network errors
       setIsAuthenticated(false);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ email, password }),
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-      );
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
 
@@ -175,7 +189,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
-    localStorage.removeItem("userEmail");
     setUser(null);
     setIsAuthenticated(false);
     setLogoutMessage("You have been successfully logged out.");
@@ -192,10 +205,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   ) => {
     const token = localStorage.getItem("token");
     if (!token) {
+      console.error("Authentication token not found");
       throw new Error("Not authenticated");
     }
 
     try {
+      console.log("Sending password change request with token...");
       const response = await fetch(`/api/users/change-password`, {
         method: "POST",
         headers: {
@@ -203,12 +218,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
         if (response.status === 401) {
+          console.error("Authentication failed - token may be invalid");
+          // Clear token and redirect to login
           localStorage.removeItem("token");
           setUser(null);
           setIsAuthenticated(false);
@@ -217,10 +235,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const errorData = await response.json().catch(() => null);
+        console.error("Error response:", errorData);
         throw new Error(errorData?.message || "Failed to change password");
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log("Password change successful:", data);
+      return data;
     } catch (error) {
       console.error("Change password error:", error);
       throw error;
@@ -234,7 +255,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify(email),
       });
 
@@ -243,7 +263,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error(errorText || "Failed to send reset email");
       }
 
-      return await response.text();
+      const responseText = await response.text();
+      return responseText;
     } catch (error) {
       console.error("Request password reset error:", error);
       throw error;
@@ -257,7 +278,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
         body: JSON.stringify({
           token,
           newPassword,
