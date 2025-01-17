@@ -42,18 +42,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
-    // Only handle actual browser/tab close, not refreshes
-    const handleUnload = (e: BeforeUnloadEvent) => {
-      if (e.persisted) return; // Don't clear on refresh
-    };
-
-    window.addEventListener('beforeunload', handleUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleUnload);
-    };
-  }, []);
-
-  useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
@@ -73,11 +61,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       try {
-        // Validate token by making a request to the API
         const response = await fetch(`/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         if (response.ok) {
@@ -88,21 +76,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           }));
           setIsAuthenticated(true);
         } else if (response.status === 401) {
-          // Only clear on unauthorized response
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
         }
-        // For other errors, keep the current auth state
       } catch (error) {
         console.error("Error validating token:", error);
-        // Keep current auth state on network errors
       }
     };
 
     validateAndSetUser();
+  }, []);
+
+  // Add rehydration mechanism
+  useEffect(() => {
+    const rehydrateAuth = () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const userEmail = localStorage.getItem("userEmail");
+
+      if (token && userId) {
+        setUser({
+          id: userId,
+          email: userEmail || "",
+        });
+        setIsAuthenticated(true);
+      }
+    };
+
+    window.addEventListener("load", rehydrateAuth);
+    return () => {
+      window.removeEventListener("load", rehydrateAuth);
+    };
   }, []);
 
   const fetchUserData = async (token: string) => {
@@ -111,37 +118,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-        // Ensure token is still stored
-        localStorage.setItem("token", token);
-      } else if (response.status === 401) {
-        // Only remove token if it's actually invalid
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsAuthenticated(false);
-      }
+
+      if (!response.ok) throw new Error("Token validation failed");
+
+      const userData = await response.json();
+      setUser(userData);
+      setIsAuthenticated(true);
+      localStorage.setItem("token", token);
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      // Don't remove token on network errors
+      console.error("Token validation error:", error);
       setIsAuthenticated(false);
     }
   };
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         },
-        body: JSON.stringify({ email, password }),
-      });
+      );
 
       const data = await response.json();
 
@@ -170,6 +175,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
+    localStorage.removeItem("userEmail");
     setUser(null);
     setIsAuthenticated(false);
     setLogoutMessage("You have been successfully logged out.");
@@ -186,12 +192,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   ) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      console.error("Authentication token not found");
       throw new Error("Not authenticated");
     }
 
     try {
-      console.log("Sending password change request with token...");
       const response = await fetch(`/api/users/change-password`, {
         method: "POST",
         headers: {
@@ -199,15 +203,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
         if (response.status === 401) {
-          console.error("Authentication failed - token may be invalid");
-          // Clear token and redirect to login
           localStorage.removeItem("token");
           setUser(null);
           setIsAuthenticated(false);
@@ -216,13 +217,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const errorData = await response.json().catch(() => null);
-        console.error("Error response:", errorData);
         throw new Error(errorData?.message || "Failed to change password");
       }
 
-      const data = await response.json();
-      console.log("Password change successful:", data);
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Change password error:", error);
       throw error;
@@ -236,6 +234,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(email),
       });
 
@@ -244,8 +243,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error(errorText || "Failed to send reset email");
       }
 
-      const responseText = await response.text();
-      return responseText;
+      return await response.text();
     } catch (error) {
       console.error("Request password reset error:", error);
       throw error;
@@ -259,6 +257,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           token,
           newPassword,
