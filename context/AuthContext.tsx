@@ -67,11 +67,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     const validateAndSetUser = async () => {
+      console.log("=== Auth Debug Logs ===");
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
+      
+      console.log("Stored token:", token ? "exists" : "missing");
+      console.log("Stored userId:", userId ? "exists" : "missing");
+      console.log("Stored userEmail:", userEmail ? "exists" : "missing");
 
       if (!token || !userId) {
+        console.log("Missing credentials - logging out");
         setIsAuthenticated(false);
         setUser(null);
         return;
@@ -85,6 +91,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       try {
+        console.log("Validating token with API...");
         // Validate token by making a request to the API
         const response = await fetch(`${API_BASE_URL}/api/users/me`, {
           headers: {
@@ -92,7 +99,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           },
         });
 
+        console.log("API Response status:", response.status);
         if (response.ok) {
+          console.log("Token validated successfully");
           const userData = await response.json();
           setUser({
             id: userId,
