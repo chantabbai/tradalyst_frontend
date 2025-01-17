@@ -42,26 +42,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
-    // Handle browser close or tab close
-    const handleUnload = () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userEmail');
-    };
-
-    // Handle visibility change (tab hidden/visible)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        handleUnload();
-      }
+    // Only handle actual browser/tab close, not refresh
+    const handleUnload = (e: BeforeUnloadEvent) => {
+      if (e.persisted) return; // Don't clear if it's just a refresh
     };
 
     window.addEventListener('beforeunload', handleUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('beforeunload', handleUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
