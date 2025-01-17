@@ -56,17 +56,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     const validateAndSetUser = async () => {
-      console.log("=== Auth Debug Logs ===");
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
       
-      console.log("Stored token:", token ? "exists" : "missing");
-      console.log("Stored userId:", userId ? "exists" : "missing");
-      console.log("Stored userEmail:", userEmail ? "exists" : "missing");
-
       if (!token || !userId) {
-        console.log("Missing credentials - logging out");
         setIsAuthenticated(false);
         setUser(null);
         return;
@@ -80,7 +74,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       });
 
       try {
-        console.log("Validating token with API...");
         // Validate token by making a request to the API
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
           headers: {
@@ -88,9 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           },
         });
 
-        console.log("API Response status:", response.status);
         if (response.ok) {
-          console.log("Token validated successfully");
           const userData = await response.json();
           setUser({
             id: userId,
@@ -108,7 +99,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
         // Don't clear auth state for other error status codes
       } catch (error) {
-        console.error("Error validating token:", error);
         // Don't clear auth state on network errors
       }
     };
@@ -202,7 +192,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      console.log("Sending password change request with token...");
       const response = await fetch(`/api/users/change-password`, {
         method: "POST",
         headers: {
@@ -217,7 +206,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       if (!response.ok) {
         if (response.status === 401) {
-          console.error("Authentication failed - token may be invalid");
           // Clear token and redirect to login
           localStorage.removeItem("token");
           setUser(null);
@@ -227,12 +215,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const errorData = await response.json().catch(() => null);
-        console.error("Error response:", errorData);
         throw new Error(errorData?.message || "Failed to change password");
       }
 
       const data = await response.json();
-      console.log("Password change successful:", data);
       return data;
     } catch (error) {
       console.error("Change password error:", error);
