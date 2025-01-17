@@ -1,13 +1,11 @@
-
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app',
+  baseURL: '/',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Access-Control-Allow-Origin': '*'
+    'Accept': 'application/json'
   }
 });
 
@@ -21,17 +19,6 @@ instance.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add a response interceptor to handle errors
-instance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 502) {
-      console.error('Backend server error:', error);
-    }
     return Promise.reject(error);
   }
 );

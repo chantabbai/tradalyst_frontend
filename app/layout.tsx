@@ -14,12 +14,11 @@ export const metadata: Metadata = {
   title: 'Tradalyst',
   description: 'One stop solution for all your trading needs',
   metadataBase: new URL('https://tradalyst.com'),
-}
-
-export const viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' }
