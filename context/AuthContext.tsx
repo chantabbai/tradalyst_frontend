@@ -86,38 +86,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`/api/users/me`, {
+        const response = await fetch(`${API_BASE_URL}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (response.ok) {
-          // Token is valid
-          setIsAuthenticated(true);
+          const userData = await response.json();
           setUser({
             id: userId,
             email: userEmail || "",
+            ...userData
           });
-          const userData = await response.json();
-          setUser((prevUser) => ({
-            ...prevUser,
-            ...userData,
-          }));
-          // Keep the valid token
-          localStorage.setItem("token", token);
-        } else {
-          // Token is invalid/expired
+          setIsAuthenticated(true);
+        } else if (response.status === 401) {
+          // Only clear on unauthorized response
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
         }
+        // Don't clear auth state for other error status codes
       } catch (error) {
         console.error("Error validating token:", error);
-        // Don't remove token on network errors
-        setIsAuthenticated(false);
+        // Don't clear auth state on network errors
       }
     };
 
