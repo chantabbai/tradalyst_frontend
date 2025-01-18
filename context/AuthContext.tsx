@@ -42,11 +42,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const router = useRouter();
 
   useEffect(() => {
+    // Only handle actual browser/tab close, not refresh
+    const handleUnload = (e: BeforeUnloadEvent) => {
+      if (e.persisted) return; // Don't clear if it's just a refresh
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleUnload);
+    };
+  }, []);
+
+  useEffect(() => {
     const validateAndSetUser = async () => {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
-
+      
       if (!token || !userId) {
         setIsAuthenticated(false);
         setUser(null);
@@ -62,40 +75,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`/api/users/me`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (response.ok) {
-          // Token is valid
-          setIsAuthenticated(true);
+          const userData = await response.json();
           setUser({
             id: userId,
             email: userEmail || "",
+            ...userData
           });
-          const userData = await response.json();
-          setUser((prevUser) => ({
-            ...prevUser,
-            ...userData,
-          }));
-          // Keep the valid token
-          localStorage.setItem("token", token);
-          // Redirect to dashboard for valid token
-          router.push("/dashboard");
-        } else {
-          // Token is invalid/expired
+          setIsAuthenticated(true);
+        } else if (response.status === 401) {
+          // Only clear on unauthorized response
           localStorage.removeItem("token");
           localStorage.removeItem("userId");
           localStorage.removeItem("userEmail");
           setUser(null);
           setIsAuthenticated(false);
         }
+        // Don't clear auth state for other error status codes
       } catch (error) {
-        console.error("Error validating token:", error);
-        // Don't remove token on network errors
-        setIsAuthenticated(false);
+        // Don't clear auth state on network errors
       }
     };
 
@@ -130,7 +134,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`/api/users/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -188,7 +192,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      console.log("Sending password change request with token...");
       const response = await fetch(`/api/users/change-password`, {
         method: "POST",
         headers: {
@@ -203,7 +206,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       if (!response.ok) {
         if (response.status === 401) {
-          console.error("Authentication failed - token may be invalid");
           // Clear token and redirect to login
           localStorage.removeItem("token");
           setUser(null);
@@ -213,12 +215,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const errorData = await response.json().catch(() => null);
-        console.error("Error response:", errorData);
         throw new Error(errorData?.message || "Failed to change password");
       }
 
       const data = await response.json();
-      console.log("Password change successful:", data);
       return data;
     } catch (error) {
       console.error("Change password error:", error);

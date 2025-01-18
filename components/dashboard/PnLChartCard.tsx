@@ -97,6 +97,10 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                 <RechartsTooltip
                   formatter={(value: number) => [formatProfit(value), 'P/L']}
                   labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                  contentStyle={{ backgroundColor: 'var(--background)', border: '1px solid var(--border)' }}
+                  wrapperStyle={{ outline: 'none' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
+                  labelStyle={{ color: 'var(--foreground)' }}
                 />
                 <Line 
                   type="monotone" 
@@ -107,6 +111,7 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                     fill: (entry: any) => entry.pnl >= 0 ? '#16a34a' : '#dc2626',
                     stroke: (entry: any) => entry.pnl >= 0 ? '#16a34a' : '#dc2626'
                   }}
+                  key={`pnl-line-${chartData.length}`}
                 />
                 <defs>
                   <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
