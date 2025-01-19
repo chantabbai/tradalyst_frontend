@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const instance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://52c8265e-6e58-4fdf-ad64-fa60ff0fb5b8-00-3o6lyfavjj71.riker.replit.dev',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
