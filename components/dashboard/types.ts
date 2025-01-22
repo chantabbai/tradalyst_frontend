@@ -1,4 +1,3 @@
-
 export interface TradeStats {
   total: number;
   open: number;
@@ -30,7 +29,8 @@ export interface DurationMetrics {
 
 export interface ChartDataPoint {
   date: string;
-  pnl: number;
+  dailyPnL: number;
+  cumulativePnL: number;
 }
 
 export interface StrategyMetrics {
