@@ -47,10 +47,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (e.persisted) return; // Don't clear if it's just a refresh
     };
 
-    window.addEventListener('beforeunload', handleUnload);
+    window.addEventListener("beforeunload", handleUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleUnload);
+      window.removeEventListener("beforeunload", handleUnload);
     };
   }, []);
 
@@ -59,7 +59,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       const userEmail = localStorage.getItem("userEmail");
-      
+
       if (!token || !userId) {
         setIsAuthenticated(false);
         setUser(null);
@@ -75,18 +75,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       try {
         // Validate token by making a request to the API
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
         if (response.ok) {
           const userData = await response.json();
           setUser({
             id: userId,
             email: userEmail || "",
-            ...userData
+            ...userData,
           });
           setIsAuthenticated(true);
         } else if (response.status === 401) {
@@ -134,15 +137,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://tradalystbackend-chantabbai07ai.replit.app'}/api/users/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ email, password }),
         },
-        body: JSON.stringify({ email, password }),
-      });
+      );
 
       const data = await response.json();
 
@@ -233,16 +239,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(email),
+        body: JSON.stringify({ email: email }), // Send as an object with email property
       });
-
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to send reset email");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to send reset email");
       }
-
-      const responseText = await response.text();
-      return responseText;
+      const responseData = await response.json();
+      return responseData.message;
     } catch (error) {
       console.error("Request password reset error:", error);
       throw error;
