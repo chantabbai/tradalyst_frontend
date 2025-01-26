@@ -198,7 +198,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
 
     try {
-      const response = await fetch(`/api/users/change-password`, {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
