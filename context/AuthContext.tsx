@@ -234,21 +234,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const requestPasswordReset = async (email: string) => {
     try {
-      const response = await fetch(`/api/users/forgot-password`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: email }), // Send as an object with email property
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/forgot-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to send reset email");
       }
+      
       const responseData = await response.json();
       return responseData.message;
     } catch (error) {
       console.error("Request password reset error:", error);
+      if (error instanceof SyntaxError) {
+        throw new Error("Server error. Please try again later.");
+      }
       throw error;
     }
   };
