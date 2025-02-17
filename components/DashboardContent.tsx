@@ -804,7 +804,8 @@ export default function DashboardContent() {
                       <XAxis 
                         dataKey="date" 
                         tickFormatter={(date) => {
-                          const dateObj = new Date(date);
+                          const dateObj = new Date(date.split('T')[0] + 'T00:00:00');
+                          dateObj.setDate(dateObj.getDate() + 1);
                           return dateObj.toLocaleDateString(undefined, {
                             year: 'numeric',
                             month: 'short',
@@ -837,7 +838,7 @@ export default function DashboardContent() {
                         ]}
                         labelFormatter={(label) => (
                           <div className="font-medium border-b pb-1 mb-1 border-border">
-                            {new Date(label).toLocaleDateString(undefined, {
+                            {new Date(label.split('T')[0] + 'T00:00:00').toLocaleDateString(undefined, {
                               weekday: 'long',
                               year: 'numeric',
                               month: 'long',
