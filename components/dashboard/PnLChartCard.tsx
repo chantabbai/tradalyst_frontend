@@ -103,7 +103,6 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                     dataKey="date" 
                     tickFormatter={(date) => {
                       const dateObj = new Date(date.split('T')[0] + 'T00:00:00');
-                      dateObj.setDate(dateObj.getDate() + 1);
                       return dateObj.toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'short',
