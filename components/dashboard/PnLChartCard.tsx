@@ -135,16 +135,20 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                       </div>, 
                       ''
                     ]}
-                    labelFormatter={(label) => (
-                      <div className="font-medium border-b pb-1 mb-1 border-border">
-                        {new Date(label).toLocaleDateString(undefined, {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </div>
-                    )}
+                    labelFormatter={(label) => {
+                          const dateObj = new Date(label);
+                          dateObj.setDate(dateObj.getDate() + 1);
+                          return (
+                            <div className="font-medium border-b pb-1 mb-1 border-border">
+                              {dateObj.toLocaleDateString(undefined, {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                          );
+                        }}
                     contentStyle={{
                       backgroundColor: 'hsl(var(--background))',
                       borderRadius: '6px',
