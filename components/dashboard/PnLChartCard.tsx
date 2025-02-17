@@ -102,9 +102,8 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => {
-                      console.log('Original date from DB:', date);
                       const dateObj = new Date(date.split('T')[0] + 'T00:00:00');
-                      console.log('Formatted date:', dateObj.toLocaleDateString());
+                      dateObj.setDate(dateObj.getDate() + 1);
                       return dateObj.toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'short',
@@ -136,7 +135,7 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                       ''
                     ]}
                     labelFormatter={(label) => {
-                          const dateObj = new Date(label);
+                          const dateObj = new Date(label.split('T')[0] + 'T00:00:00');
                           dateObj.setDate(dateObj.getDate() + 1);
                           return (
                             <div className="font-medium border-b pb-1 mb-1 border-border">
