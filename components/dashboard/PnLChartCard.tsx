@@ -102,12 +102,8 @@ export function PnLChartCard({ chartData, timeFrame, setTimeFrame, isLoading }: 
                   <XAxis 
                     dataKey="date" 
                     tickFormatter={(date) => {
-                      const dateObj = new Date(date);
-                      return dateObj.toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      });
+                      const dateObj = new Date(date.split('T')[0] + 'T00:00:00');
+                      return dateObj.toLocaleDateString();
                     }}
                     angle={-45}
                     textAnchor="end"
