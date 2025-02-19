@@ -21,8 +21,60 @@ export default function Register() {
   const router = useRouter();
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
+    // Basic length check
+    if (!email || email.length > 254) return false;
+
+    // Basic format check
+    const basicEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!basicEmailRegex.test(email)) return false;
+
+    // Extract domain
+    const domain = email.split('@')[1].toLowerCase();
+
+    // List of invalid/disposable email domains
+    const invalidDomains = [
+      'tempmail.com',
+      'throwaway.com',
+      'throwawaymail.com',
+      'trashmail.com',
+      'yopmail.com',
+      'mailinator.com',
+      'guerrillamail.com',
+      'sharklasers.com',
+      'example.com',
+      'test.com'
+    ];
+
+    // Check domain
+    if (invalidDomains.includes(domain)) return false;
+
+    // Domain specific validations
+    const domainParts = domain.split('.');
+
+    // List of valid TLDs
+    const validTLDs = [
+      'com', 'net', 'org', 'edu', 'gov', 'mil', 'int',
+      'info', 'biz', 'name', 'pro', 'museum', 'coop',
+      'aero', 'asia', 'cat', 'jobs', 'mobi', 'tel',
+      'travel', 'xxx', 'app', 'dev', 'io', 'me', 'co',
+      'ai', 'uk', 'us', 'ca', 'au', 'de', 'fr', 'jp',
+      'ru', 'ch', 'it', 'nl', 'se', 'no', 'es', 'tech'
+    ];
+
+    // Check if TLD is valid
+    const tld = domainParts[domainParts.length - 1];
+    if (!validTLDs.includes(tld)) return false;
+
+    // Validate domain parts
+    for (const part of domainParts) {
+      // Each part must:
+      // - Start and end with alphanumeric
+      // - Can contain hyphens
+      // - Be between 1-63 chars
+      if (!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(part)) return false;
+    }
+
+    return true;
   };
 
   const validatePassword = (password: string) => {
