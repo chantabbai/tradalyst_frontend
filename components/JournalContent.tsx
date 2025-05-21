@@ -125,6 +125,19 @@ export default function JournalContent() {
   const [bulkErrors, setBulkErrors] = useState<{
     [key: number]: { [key: string]: string };
   }>({});
+  // Add new state variables at the top with other state declarations
+  const [csvPreview, setCsvPreview] = useState<string[][]>([]);
+  const [mappingFields, setMappingFields] = useState({
+    symbol: "",
+    date: "",
+    action: "",
+    quantity: "",
+    price: "",
+    type: "",
+    optionType: "",
+    status: ""
+  });
+  const [showMapping, setShowMapping] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
@@ -580,10 +593,7 @@ export default function JournalContent() {
     }
   };
 
-  // Update handleFileUpload to include debug option
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -591,63 +601,21 @@ export default function JournalContent() {
     setImportError(null);
     setImportSuccess(null);
 
-    try {
-      const fileContent = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          let content = (e.target?.result as string)
-            .replace(/^\uFEFF/, "")
-            .replace(/\r\n/g, "\n")
-            .replace(/\r/g, "\n");
-
-          content = content
-            .split("\n")
-            .filter((line) => line.trim().length > 0)
-            .join("\n")
-            .trim();
-
-          resolve(content);
-        };
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsText(file, "UTF-8");
-      });
-
-      if (!fileContent.trim()) {
-        throw new Error("File is empty");
+    // Read file and show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        const lines = content.split('\n').map(line => line.split(','));
+        setCsvPreview(lines.slice(0, 5)); // Preview first 5 rows
+        setShowMapping(true);
+        setIsImporting(false);
+      } catch (error) {
+        setImportError("Failed to read CSV file");
+        setIsImporting(false);
       }
-
-      const response = await axiosInstance.post("/api/trades/import", {
-        content: fileContent,
-        userId: user?.id,
-        fileName: file.name,
-      });
-
-      if (response.data) {
-        await fetchTrades();
-        setIsDialogOpen(false); // Close dialog immediately
-        setImportSuccess(null); // Clear success message
-      }
-    } catch (error: any) {
-      console.error("Error uploading file:", error);
-
-      let errorMessage =
-        "Failed to import trades. Please check the file format.";
-
-      if (error.response?.data?.message) {
-        errorMessage = error.response.data.message;
-      } else if (error.message === "Failed to read file") {
-        errorMessage = "Failed to read the file. Please try again.";
-      } else if (error.message === "File is empty") {
-        errorMessage = "The file appears to be empty.";
-      }
-
-      setImportError(errorMessage);
-    } finally {
-      setIsImporting(false);
-      if (event.target) {
-        event.target.value = "";
-      }
-    }
+    };
+    reader.readAsText(file);
   };
 
   // Add this helper function to validate CSV content
@@ -1061,6 +1029,7 @@ export default function JournalContent() {
           </div>
 
           <div className="flex justify-between gap-2">
+```text
             <Button type="button" variant="outline" onClick={addNewTradeRow}>
               Add Row
             </Button>
@@ -1361,7 +1330,7 @@ export default function JournalContent() {
                         {importSuccess}
                       </div>
                     )}
-                    {!importSuccess && (
+                    {!importSuccess && !showMapping && (
                       <>
                         <div className="space-y-4">
                           <div className="flex flex-col gap-2">
@@ -1432,10 +1401,300 @@ export default function JournalContent() {
                         </div>
                       </>
                     )}
+
+                    {showMapping && (
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Map CSV Columns</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Match the columns from your CSV file to the
+                          corresponding fields in our system.
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label>Symbol</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  symbol: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Date</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  date: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Action</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  action: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Quantity</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  quantity: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Price</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  price: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Type</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  type: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          <div>
+                            <Label>Option Type</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  optionType: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                           <div>
+                            <Label>Status</Label>
+                            <Select
+                              onValueChange={(value) =>
+                                setMappingFields({
+                                  ...mappingFields,
+                                  status: value,
+                                })
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select column" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {csvPreview[0]?.map((header, index) => (
+                                  <SelectItem key={index} value={header}>
+                                    {header}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={async () => {
+                            // Implement logic to parse CSV with mapping and import trades
+                            setIsImporting(true);
+                            setImportError(null);
+                            try {
+                              const file =
+                                fileInputRef.current?.files?.[0];
+                              if (!file) {
+                                throw new Error("No file selected");
+                              }
+
+                              const fileContent =
+                                await new Promise<string>((resolve, reject) => {
+                                  const reader = new FileReader();
+                                  reader.onload = (e) => {
+                                    resolve(
+                                      e.target?.result as string,
+                                    );
+                                  };
+                                  reader.onerror = () =>
+                                    reject(
+                                      new Error("Failed to read file"),
+                                    );
+                                  reader.readAsText(file);
+                                });
+
+                              const lines = fileContent
+                                .split("\n")
+                                .map((line) => line.split(","));
+                              const headers = lines[0];
+                              const tradesToImport: any[] = [];
+
+                              for (let i = 1; i < lines.length; i++) {
+                                const row = lines[i];
+                                if (!row || row.length === 0) continue; // Skip empty rows
+                                const trade: any = {};
+                                trade.symbol =
+                                  row[headers.indexOf(mappingFields.symbol)];
+                                trade.date =
+                                  row[headers.indexOf(mappingFields.date)];
+                                trade.action =
+                                  row[headers.indexOf(mappingFields.action)];
+                                trade.quantity =
+                                  row[headers.indexOf(mappingFields.quantity)];
+                                trade.price =
+                                  row[headers.indexOf(mappingFields.price)];
+                                trade.type =
+                                  row[headers.indexOf(mappingFields.type)];
+                                trade.optionType =
+                                  row[headers.indexOf(
+                                    mappingFields.optionType,
+                                  )];
+                                trade.status =
+                                  row[headers.indexOf(mappingFields.status)];
+                                trade.userId = user?.id;
+                                tradesToImport.push(trade);
+                              }
+                              //console.log("tradesToImport", tradesToImport);
+                              //console.log("mappingFields", mappingFields);
+                              //console.log("lines", lines);
+
+                              // Post trades to backend
+                              const response = await axiosInstance.post(
+                                "/api/trades/import/mapped",
+                                {
+                                  trades: tradesToImport,
+                                  userId: user?.id,
+                                },
+                              );
+                              if (response.data) {
+                                await fetchTrades();
+                                setIsDialogOpen(false); // Close dialog immediately
+                                setImportSuccess(null); // Clear success message
+                                setShowMapping(false);
+                              }
+                            } catch (error: any) {
+                              console.error(
+                                "Error importing mapped trades:",
+                                error,
+                              );
+                              setImportError(
+                                error.message ||
+                                  "Failed to import trades. Please check the file format and column mappings.",
+                              );
+                            } finally {
+                              setIsImporting(false);
+                            }
+                          }}
+                          className="w-full"
+                          disabled={isImporting}
+                        >
+                          Import Trades
+                        </Button>
+                      </div>
+                    )}
                   </>
                 )}
-              </div>
-            </DialogContent>
+              </DialogContent>
           </Dialog>
         </div>
       </div>
