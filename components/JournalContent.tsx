@@ -606,10 +606,11 @@ export default function JournalContent() {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const lines = content.split('\n').map(line => line.split(','));
+        const lines = content.split('\n').map(line => line.split('\t')); // Change to tab delimiter
         setCsvPreview(lines.slice(0, 5)); // Preview first 5 rows
         setShowMapping(true);
         setIsImporting(false);
+        setIsDialogOpen(true); // Ensure dialog stays open
       } catch (error) {
         setImportError("Failed to read CSV file");
         setIsImporting(false);
