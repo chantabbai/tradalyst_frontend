@@ -31,7 +31,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   children,
@@ -76,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       try {
         // Validate token by making a request to the API
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/me`,
+          `${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/me`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const fetchUserData = async (token: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/me`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/login`,
+        `${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/login`,
         {
           method: "POST",
           credentials: "include",
@@ -199,7 +199,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/change-password`, {
+        `${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +236,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const requestPasswordReset = async (email: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/forgot-password`,
+        `${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/forgot-password`,
         {
           method: "POST",
           headers: {
@@ -265,7 +265,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const resetPassword = async (token: string, newPassword: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://tradalystbackend-chantabbai07ai.replit.app"}/api/users/reset-password`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://9b28ddcd-cd2a-4dce-b5e8-9d4349800225-00-2ryqbnddqd22p.janeway.replit.dev"}/api/users/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
